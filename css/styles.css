@@ -1,23 +1,30 @@
 /* ===========================================================
-   MINDSET — Design System
-   Editorial Confidence · Assam Oxblood · Warm Paper
+   MINDSET CAREER — Design System
+   Refined Editorial · Royal Blue · Lime Accent · Warm Paper
    =========================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@300..800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  /* Palette */
-  --paper: #F4EFE6;
-  --paper-2: #EDE6D8;
-  --paper-3: #E3DAC7;
+  /* Palette — Mindset Career brand (blue + green from the logo)
+     The CSS variable names were kept (--oxblood, --sienna) so the
+     rest of the stylesheet doesn't have to change; only the values
+     do. Primary is deep royal blue, accent is fresh lime green.
+     Paper / ink stay warm-cream for continuity with the approved
+     editorial layout. */
+  --paper: #F6F4EE;
+  --paper-2: #ECE7DB;
+  --paper-3: #E0D8C6;
   --ink: #14110F;
   --ink-soft: #3B332D;
   --rule: #C8BDA8;
   --rule-soft: #D8CEBB;
-  --oxblood: #7A1F1A;
-  --oxblood-deep: #551411;
-  --sienna: #C9762D;
-  --sienna-soft: #E0A064;
+  /* Primary (was oxblood maroon) → Mindset Career deep blue */
+  --oxblood: #003FA1;
+  --oxblood-deep: #002B75;
+  /* Accent (was sienna orange) → Mindset Career lime green */
+  --sienna: #6FA033;
+  --sienna-soft: #98C548;
   --sage: #3F5D3D;
   --sage-soft: #6B7A5A;
   --warn: #B8541A;

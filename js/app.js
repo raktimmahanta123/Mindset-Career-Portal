@@ -524,9 +524,8 @@ function renderSidebar(active) {
 
   return `
     <aside class="sidebar">
-      <a href="dashboard.html" class="brand" style="text-decoration:none">
-        <span class="dot"></span>Mindset
-        <span class="sub">Career</span>
+      <a href="dashboard.html" class="brand" style="text-decoration:none;padding:6px 0">
+        <img src="assets/logo.png" alt="Mindset Career" style="height:38px;width:auto;background:#fff;padding:5px 10px;border-radius:5px;display:block" />
       </a>
 
       <div class="side-group">
