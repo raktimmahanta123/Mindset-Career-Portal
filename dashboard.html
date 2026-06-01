@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard — Mindset Portal</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="portal-shell">
+  <div id="side-root"></div>
+
+  <main class="portal-main">
+    <div class="portal-head">
+      <div>
+        <div class="crumb">Portal · Overview</div>
+        <h1>Good <span class="italic" id="tod">morning</span>,<br/>here's the room.</h1>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="DB.reset(); location.reload();">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 0115.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 01-15.5 6.3L3 16M3 21v-5h5"/></svg>
+          Reset demo data
+        </button>
+        <a href="register.html" class="btn btn-oxblood">
+          + New Registration
+        </a>
+      </div>
+    </div>
+
+    <!-- HUB -->
+    <div class="hub">
+      <a href="employers.html" class="hub-tile" style="text-decoration:none; color:inherit">
+        <div>
+          <div class="num">§ 01 — EMPLOYERS</div>
+          <h2>Manage<br/><em>employer</em> records.</h2>
+        </div>
+        <div class="foot">
+          <div class="mini-count">
+            <div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase;">Total on file</div>
+            <div class="mono" style="font-size:22px; color:var(--ink); margin-top:4px;" id="emp-count">—</div>
+          </div>
+          <div class="go">→</div>
+        </div>
+      </a>
+
+      <a href="employees.html" class="hub-tile" style="text-decoration:none; color:inherit">
+        <div>
+          <div class="num">§ 02 — EMPLOYEES</div>
+          <h2>Manage<br/><em>candidate</em> records.</h2>
+        </div>
+        <div class="foot">
+          <div class="mini-count">
+            <div style="font-size:11px; letter-spacing:0.18em; text-transform:uppercase;">Registered</div>
+            <div class="mono" style="font-size:22px; color:var(--ink); margin-top:4px;" id="can-count">—</div>
+          </div>
+          <div class="go">→</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-strip">
+      <div class="stat">
+        <div class="l">Placements this month</div>
+        <div class="n" id="stat-place">—</div>
+        <div class="d">▲ 12% vs. last month</div>
+      </div>
+      <div class="stat">
+        <div class="l">Pending verifications</div>
+        <div class="n" id="stat-pend">—</div>
+        <div class="d" style="color:var(--warn)">Needs review</div>
+      </div>
+      <div class="stat">
+        <div class="l">Active districts</div>
+        <div class="n" id="stat-dist">—</div>
+        <div class="d">Across NE India</div>
+      </div>
+      <div class="stat">
+        <div class="l">Revenue (registrations)</div>
+        <div class="n" id="stat-rev">—</div>
+        <div class="d">@ ₹300 each</div>
+      </div>
+    </div>
+
+    <!-- TWO BLOCKS -->
+    <div class="block-two">
+      <div class="block">
+        <div class="block-head">
+          <h3>Recent <em style="font-style:italic; color:var(--oxblood)">activity</em></h3>
+          <a href="activity.html">View all log →</a>
+        </div>
+        <div id="log-list"></div>
+      </div>
+
+      <div class="block" style="background:var(--ink); color:var(--paper); border-color:var(--ink)">
+        <div class="block-head" style="border-color: rgba(244,239,230,0.2)">
+          <h3 style="color:var(--paper)">Quick <em style="color:var(--sienna-soft)">actions</em></h3>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <a href="employers.html" class="btn btn-ghost" style="justify-content:space-between; background:rgba(244,239,230,0.06); color:var(--paper); border-color:rgba(244,239,230,0.2)">
+            <span>+ Add Employer</span><span>→</span>
+          </a>
+          <a href="employees.html" class="btn btn-ghost" style="justify-content:space-between; background:rgba(244,239,230,0.06); color:var(--paper); border-color:rgba(244,239,230,0.2)">
+            <span>+ Add Candidate</span><span>→</span>
+          </a>
+          <a href="register.html" class="btn btn-ghost" style="justify-content:space-between; background:rgba(244,239,230,0.06); color:var(--paper); border-color:rgba(244,239,230,0.2)">
+            <span>Generate Receipt (₹300)</span><span>→</span>
+          </a>
+          <button class="btn btn-ghost" onclick="exportAll()" style="justify-content:space-between; background:rgba(244,239,230,0.06); color:var(--paper); border-color:rgba(244,239,230,0.2); text-align:left">
+            <span>Export all data (.csv)</span><span>↓</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const session = requireAuth();
+  document.getElementById("side-root").outerHTML = renderSidebar("dashboard");
+
+  // Time-of-day greeting
+  (function() {
+    const h = new Date().getHours();
+    const greeting = h < 12 ? "morning" : (h < 17 ? "afternoon" : "evening");
+    document.getElementById("tod").textContent = greeting;
+  })();
+
+  function render() {
+    const emps = DB.get("employers");
+    const cans = DB.get("employees");
+    const logs = DB.get("logs");
+
+    document.getElementById("emp-count").textContent = emps.length.toString().padStart(3, "0");
+    document.getElementById("can-count").textContent = cans.length.toString().padStart(3, "0");
+
+    document.getElementById("stat-place").textContent = Math.min(cans.length, 12);
+    document.getElementById("stat-pend").textContent = cans.filter(c => c.status === "pending").length;
+    const districts = new Set(emps.map(e => e.district).concat(cans.map(c => c.district)));
+    document.getElementById("stat-dist").textContent = districts.size;
+    const revenue = cans.filter(c => c.status === "paid").length * 300;
+    document.getElementById("stat-rev").textContent = formatINR(revenue);
+
+    const list = document.getElementById("log-list");
+    list.innerHTML = logs.slice(0, 8).map(l => `
+      <div class="log-item">
+        <span class="t">${formatTime(l.t)}</span>
+        <span><span class="u">${l.user}</span> ${l.action} <em style="font-style:italic; color:var(--oxblood)">${l.target}</em></span>
+        <span class="who">LOG</span>
+      </div>
+    `).join("");
+  }
+
+  function exportAll() {
+    exportCSV(DB.get("employers"), "mindset-employers.csv");
+    setTimeout(() => exportCSV(DB.get("employees"), "mindset-employees.csv"), 400);
+  }
+
+  render();
+</script>
+</body>
+</html>

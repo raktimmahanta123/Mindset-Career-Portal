@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Activity Log — Mindset Portal</title>
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  .log-grid {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 0;
+  }
+  .log-row {
+    display: grid;
+    grid-template-columns: 160px 140px 1fr 100px;
+    gap: 24px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: center;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row:hover { background: var(--paper-2); }
+  .log-row .time { font-family: var(--f-mono); font-size: 12px; color: var(--ink-soft); }
+  .log-row .who {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 4px 10px; background: var(--ink); color: var(--paper);
+    display: inline-block; width: fit-content;
+  }
+  .log-row .who.po { background: var(--oxblood); }
+  .log-row .what { font-size: 14.5px; }
+  .log-row .what strong { color: var(--oxblood); font-family: var(--f-display); font-style: italic; font-weight: 500; }
+  .log-row .tag-cell {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--sienna); text-align: right;
+  }
+  @media (max-width: 720px) {
+    .log-row { grid-template-columns: 1fr; gap: 6px; }
+    .log-row .tag-cell { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="portal-shell">
+  <div id="side-root"></div>
+
+  <main class="portal-main">
+    <div class="portal-head">
+      <div>
+        <div class="crumb">Reports · Activity</div>
+        <h1><span class="italic">Activity</span> log.</h1>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="exportLogs()">Export .csv</button>
+        <button class="btn btn-oxblood" onclick="clearLogs()">Clear log</button>
+      </div>
+    </div>
+
+    <div class="tbl-tools">
+      <div class="left">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="q" placeholder="Filter by user, action or target…" />
+        </div>
+      </div>
+      <div class="right">
+        <span class="num-tag" id="count-note">—</span>
+      </div>
+    </div>
+
+    <div class="log-grid" id="list"></div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  requireAuth();
+  document.getElementById("side-root").outerHTML = renderSidebar("activity");
+
+  let query = "";
+  document.getElementById("q").addEventListener("input", e => { query = e.target.value.toLowerCase(); render(); });
+
+  function render() {
+    let logs = DB.get("logs");
+    if (query) {
+      logs = logs.filter(l => (l.user + l.action + l.target).toLowerCase().includes(query));
+    }
+    document.getElementById("count-note").textContent = `${logs.length} events`;
+    document.getElementById("list").innerHTML = logs.map(l => `
+      <div class="log-row">
+        <span class="time">${new Date(l.t).toLocaleString("en-IN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" })}</span>
+        <span class="who ${l.user.toLowerCase().startsWith('po') ? 'po' : ''}">${l.user}</span>
+        <span class="what">${l.action} <strong>${l.target}</strong></span>
+        <span class="tag-cell">${formatTime(l.t)}</span>
+      </div>
+    `).join("") || `<div style="padding:40px; text-align:center; color:var(--ink-soft)">No events match.</div>`;
+  }
+
+  function exportLogs() {
+    const rows = DB.get("logs").map(l => ({
+      timestamp: new Date(l.t).toISOString(),
+      user: l.user,
+      action: l.action,
+      target: l.target
+    }));
+    exportCSV(rows, "mindset-activity.csv");
+  }
+
+  function clearLogs() {
+    if (!confirm("Clear all log entries? This cannot be undone.")) return;
+    DB.set("logs", []);
+    logEvent("cleared the activity log", "all entries");
+    flash("Log cleared");
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>

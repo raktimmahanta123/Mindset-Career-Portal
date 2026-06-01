@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Employers — Mindset Portal</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="portal-shell">
+  <div id="side-root"></div>
+
+  <main class="portal-main">
+    <div class="portal-head">
+      <div>
+        <div class="crumb">Management · § 01 Employers</div>
+        <h1><span class="italic">Employer</span> ledger.</h1>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="exportEmp()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export .csv
+        </button>
+        <button class="btn btn-ghost" onclick="openBulk()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Bulk import
+        </button>
+        <button class="btn btn-oxblood" onclick="openNew()">+ Add New</button>
+      </div>
+    </div>
+
+    <div class="tbl-tools">
+      <div class="left">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="q" placeholder="Search company, person, town, district…" />
+        </div>
+        <span class="chip active" data-filter="all">All</span>
+        <span class="chip" data-filter="active">Active</span>
+        <span class="chip" data-filter="archived">Archived</span>
+      </div>
+      <div class="right">
+        <span class="num-tag" id="count-note">—</span>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:56px">SN</th>
+            <th>Company / Organisation</th>
+            <th>Contact Person</th>
+            <th>Designation</th>
+            <th>Contact No.</th>
+            <th>State</th>
+            <th>District</th>
+            <th>Town</th>
+            <th style="min-width:240px">Remarks</th>
+            <th style="width:120px">Status</th>
+            <th style="width:130px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="num-tag" id="mode-tag">NEW · § 01</div>
+        <h2 id="mode-title"><span class="italic">Add</span> employer</h2>
+      </div>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="frm" onsubmit="event.preventDefault(); saveEmp();">
+        <div class="field">
+          <label>Company / Organisation Name ·</label>
+          <input name="company" required />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Contact Person ·</label>
+            <input name="person" required />
+          </div>
+          <div class="field">
+            <label>Designation</label>
+            <input name="designation" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Contact Number ·</label>
+            <input name="phone" required placeholder="+91 ..." />
+          </div>
+          <div class="field">
+            <label>State ·</label>
+            <select name="state" required id="stateSel"></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>District</label>
+            <input name="district" />
+          </div>
+          <div class="field">
+            <label>Town</label>
+            <input name="town" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Remarks</label>
+          <textarea name="remark" placeholder="Notes, follow-up, open vacancies…"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-oxblood" onclick="saveEmp()">Save record →</button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK IMPORT MODAL -->
+<div class="modal-backdrop" id="bulk-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="num-tag">BULK · § 01</div>
+        <h2><span class="italic">Bulk import</span> employers</h2>
+      </div>
+      <button class="btn-icon" onclick="closeBulk()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0 0 14px;color:var(--ink-soft);font-size:14px;line-height:1.55">
+        Upload a CSV to add multiple employer records at once. Need the column format?
+        Download the template below — it lists the required columns and one example row.
+        Phone numbers must be unique across the database.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn btn-ghost" type="button" onclick="downloadCsvTemplate('employers')">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download template
+        </button>
+        <label class="btn btn-oxblood" style="cursor:pointer">
+          Choose CSV file
+          <input type="file" accept=".csv,text/csv" onchange="handleBulkFile(event)" style="display:none" />
+        </label>
+      </div>
+      <div id="bulk-status"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" type="button" onclick="closeBulk()" id="bulk-cancel">Cancel</button>
+      <button class="btn btn-oxblood" type="button" onclick="runBulk()" id="bulk-go" disabled>Import 0 rows</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  requireAuth();
+  document.getElementById("side-root").outerHTML = renderSidebar("employers");
+
+  let editingId = null;
+  let filter = "all";
+  let query = "";
+
+  // Populate states
+  document.getElementById("stateSel").innerHTML = SEED.STATES.map(s => `<option>${s}</option>`).join("");
+
+  document.querySelectorAll(".chip").forEach(c => {
+    c.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach(x => x.classList.remove("active"));
+      c.classList.add("active");
+      filter = c.dataset.filter;
+      render();
+    });
+  });
+
+  document.getElementById("q").addEventListener("input", (e) => {
+    query = e.target.value.toLowerCase();
+    render();
+  });
+
+  function render() {
+    const all = DB.get("employers");
+    let rows = all.filter(r => {
+      if (filter !== "all" && (r.status || "active") !== filter) return false;
+      if (!query) return true;
+      return (r.company + r.person + r.designation + r.phone + r.state + r.district + r.town + r.remark)
+        .toLowerCase().includes(query);
+    });
+    document.getElementById("count-note").textContent = `Showing ${rows.length} of ${all.length}`;
+
+    document.getElementById("tbody").innerHTML = rows.map((r, i) => `
+      <tr data-id="${r.id}">
+        <td class="sn">${String(i + 1).padStart(2, "0")}</td>
+        <td>
+          <div class="strong">${r.company}</div>
+          <div class="sub">${r.id}</div>
+        </td>
+        <td>${r.person}</td>
+        <td>${r.designation || "—"}</td>
+        <td class="mono">${r.phone}</td>
+        <td>${r.state}</td>
+        <td>${r.district}</td>
+        <td>${r.town}</td>
+        <td>
+          <textarea class="remark" onblur="saveRemark('${r.id}', this.value)">${r.remark || ""}</textarea>
+        </td>
+        <td><span class="tag ${r.status === 'archived' ? 'archived' : 'paid'}">${r.status || 'active'}</span></td>
+        <td class="actions-cell">
+          <button onclick="openEdit('${r.id}')">Edit</button>
+          <button onclick="toggleArchive('${r.id}')">${r.status === 'archived' ? 'Restore' : 'Archive'}</button>
+          <button class="del" onclick="delRow('${r.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join("") || `<tr><td colspan="11" style="padding:40px; text-align:center; color:var(--ink-soft);">No records match.</td></tr>`;
+  }
+
+  function openNew() {
+    editingId = null;
+    document.getElementById("mode-tag").textContent = "NEW · § 01";
+    document.getElementById("mode-title").innerHTML = '<span class="italic">Add</span> employer';
+    document.getElementById("frm").reset();
+    document.getElementById("modal").classList.add("open");
+  }
+
+  function openEdit(id) {
+    editingId = id;
+    const r = DB.get("employers").find(x => x.id === id);
+    if (!r) return;
+    document.getElementById("mode-tag").textContent = "EDIT · " + id;
+    document.getElementById("mode-title").innerHTML = '<span class="italic">Edit</span> employer';
+    const f = document.getElementById("frm");
+    f.company.value = r.company;
+    f.person.value = r.person;
+    f.designation.value = r.designation || "";
+    f.phone.value = r.phone;
+    f.state.value = r.state;
+    f.district.value = r.district;
+    f.town.value = r.town;
+    f.remark.value = r.remark || "";
+    document.getElementById("modal").classList.add("open");
+  }
+
+  function closeModal() { document.getElementById("modal").classList.remove("open"); }
+
+  function saveEmp() {
+    const f = document.getElementById("frm");
+    if (!f.checkValidity()) { f.reportValidity(); return; }
+    const data = Object.fromEntries(new FormData(f).entries());
+    let list = DB.get("employers");
+
+    // Duplicate phone check
+    const dup = list.find(x => x.phone === data.phone && x.id !== editingId);
+    if (dup) { flash("A record with this phone already exists"); return; }
+
+    if (editingId) {
+      list = list.map(x => x.id === editingId ? { ...x, ...data } : x);
+      logEvent("edited employer", data.company);
+      flash("Record updated");
+    } else {
+      const id = "EMP-" + (1001 + list.length);
+      list.unshift({ id, ...data, status: "active", createdAt: Date.now() });
+      logEvent("added new employer", data.company);
+      flash("Record added");
+    }
+    DB.set("employers", list);
+    closeModal();
+    render();
+  }
+
+  function saveRemark(id, val) {
+    let list = DB.get("employers");
+    const r = list.find(x => x.id === id);
+    if (r && r.remark !== val) {
+      r.remark = val;
+      DB.set("employers", list);
+      logEvent("updated remark on", r.company);
+    }
+  }
+
+  function toggleArchive(id) {
+    let list = DB.get("employers");
+    const r = list.find(x => x.id === id);
+    if (!r) return;
+    r.status = r.status === "archived" ? "active" : "archived";
+    DB.set("employers", list);
+    logEvent(r.status === "archived" ? "archived record" : "restored record", r.company);
+    flash(r.status === "archived" ? "Archived" : "Restored");
+    render();
+  }
+
+  function delRow(id) {
+    if (!confirm("Delete this record permanently?")) return;
+    let list = DB.get("employers");
+    const r = list.find(x => x.id === id);
+    list = list.filter(x => x.id !== id);
+    DB.set("employers", list);
+    logEvent("deleted employer", r ? r.company : id);
+    flash("Deleted");
+    render();
+  }
+
+  function exportEmp() { exportCSV(DB.get("employers"), "mindset-employers.csv"); }
+
+  /* ===== Bulk import ===== */
+  let bulkRows = [];
+
+  function openBulk() {
+    bulkRows = [];
+    document.getElementById("bulk-status").innerHTML = "";
+    document.getElementById("bulk-go").style.display = "";
+    document.getElementById("bulk-cancel").textContent = "Cancel";
+    setBulkButton(0);
+    document.getElementById("bulk-modal").classList.add("open");
+  }
+
+  function closeBulk() {
+    document.getElementById("bulk-modal").classList.remove("open");
+  }
+
+  function setBulkButton(n, label) {
+    const b = document.getElementById("bulk-go");
+    b.textContent = label || `Import ${n} row${n === 1 ? "" : "s"}`;
+    b.disabled = !n;
+  }
+
+  async function handleBulkFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting same file
+    if (!file) return;
+    const status = document.getElementById("bulk-status");
+    status.innerHTML = `<p style="color:var(--ink-soft);font-size:14px;margin:8px 0">Reading <strong>${file.name}</strong>…</p>`;
+    setBulkButton(0);
+    try {
+      const { rows, headers } = await parseCsvFile(file);
+      const required = BULK_CONFIGS.employers.columns.filter(c => c.required).map(c => c.name);
+      const missing = required.filter(c => !headers.includes(c));
+      if (missing.length) {
+        status.innerHTML = `<p style="color:#a13c2a;font-size:14px;margin:8px 0"><strong>Missing required columns:</strong> ${missing.join(", ")}. Use the template above.</p>`;
+        bulkRows = []; return;
+      }
+      if (!rows.length) {
+        status.innerHTML = `<p style="color:#a13c2a;font-size:14px;margin:8px 0">CSV has no data rows.</p>`;
+        return;
+      }
+      if (rows.length > 500) {
+        status.innerHTML = `<p style="color:#a13c2a;font-size:14px;margin:8px 0">CSV has ${rows.length} rows — maximum 500 per import.</p>`;
+        return;
+      }
+      bulkRows = rows;
+      const cols = BULK_CONFIGS.employers.columns.map(c => c.name);
+      const previewRows = rows.slice(0, 5);
+      status.innerHTML = `
+        <p style="font-size:14px;margin:8px 0"><strong>${file.name}</strong> · ${rows.length} row${rows.length === 1 ? "" : "s"} ready${rows.length > 5 ? " (showing first 5)" : ""}.</p>
+        <div style="overflow:auto;max-height:220px;border:1px solid var(--line);border-radius:8px;margin-top:8px">
+          <table class="tbl" style="margin:0">
+            <thead><tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr></thead>
+            <tbody>${previewRows.map(r => `<tr>${cols.map(c => `<td>${(r[c] ?? "").toString().slice(0, 60)}</td>`).join("")}</tr>`).join("")}</tbody>
+          </table>
+        </div>`;
+      setBulkButton(rows.length);
+    } catch (err) {
+      status.innerHTML = `<p style="color:#a13c2a;font-size:14px;margin:8px 0">Could not read file: ${err.message}</p>`;
+    }
+  }
+
+  function runBulk() {
+    if (!bulkRows.length) return;
+    setBulkButton(0, "Importing…");
+    const result = bulkImport("employers", bulkRows);
+    const status = document.getElementById("bulk-status");
+    let html = `<p style="margin:10px 0;font-size:14px"><strong style="color:#3F5D3D">${result.inserted.length} record${result.inserted.length === 1 ? "" : "s"} imported.</strong>`;
+    if (result.failed.length) {
+      html += ` <span style="color:#a13c2a">${result.failed.length} skipped.</span></p>`;
+      html += `<details open style="margin-top:6px"><summary style="cursor:pointer;font-size:14px;color:var(--ink-soft)">Skipped rows</summary><ul style="margin:8px 0 0;padding-left:20px;font-size:13px">`;
+      html += result.failed.map(f => `<li><strong>Row ${f.row}:</strong> ${f.error}</li>`).join("");
+      html += `</ul></details>`;
+    } else {
+      html += `</p>`;
+    }
+    status.innerHTML = html;
+    document.getElementById("bulk-cancel").textContent = "Done";
+    document.getElementById("bulk-go").style.display = "none";
+    if (result.inserted.length) {
+      flash(`Imported ${result.inserted.length} record${result.inserted.length === 1 ? "" : "s"}`);
+      render();
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>

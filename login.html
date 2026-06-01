@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portal Login — Mindset</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="login-shell">
+  <aside class="login-art">
+    <div class="meta">
+      <span>Mindset · Back-office</span>
+      <span>Phase I · v1.0</span>
+    </div>
+
+    <div>
+      <div class="eyebrow" style="color:var(--sienna-soft); margin-bottom:28px"><span class="dot" style="background:var(--sienna-soft)"></span>Restricted Access</div>
+      <h1>
+        A quiet<br/>
+        room for<br/>
+        <span class="italic">considered</span><br/>
+        work.
+      </h1>
+      <p class="lede">
+        Mindset's admin portal — used by our placement office to track employers, candidates and registration receipts. Employer & candidate logins open in Phase II.
+      </p>
+    </div>
+
+    <div class="meta">
+      <span>Guwahati · Assam</span>
+      <span>26.1445° N · 91.7362° E</span>
+    </div>
+  </aside>
+
+  <section class="login-form-wrap">
+    <div style="max-width:420px; width:100%; margin:0 auto;">
+      <div class="num-tag" style="margin-bottom:8px">FORM · AUTH 01</div>
+      <h2>Welcome <em>back.</em></h2>
+      <p class="sub">Sign in with your assigned role. Sessions last 12 hours.</p>
+
+      <div class="role-toggle" id="roleToggle">
+        <button class="active" data-role="admin">Administrator</button>
+        <button data-role="po">Placement Office</button>
+      </div>
+
+      <form onsubmit="event.preventDefault(); doLogin();">
+        <div class="field">
+          <label>Username ·</label>
+          <input id="u" required value="admin" />
+        </div>
+        <div class="field">
+          <label>Password ·</label>
+          <input id="p" type="password" required value="mindset2025" />
+        </div>
+
+        <button type="submit" class="btn btn-oxblood" style="width:100%; justify-content:center; margin-top:20px">
+          Enter Portal →
+        </button>
+
+        <div class="hint">
+          Demo credentials · pre-filled<br/>
+          admin / mindset2025 &nbsp;·&nbsp; po / mindset2025
+        </div>
+      </form>
+
+      <p style="margin-top:28px; font-size:13px; color:var(--ink-soft);">
+        ← <a href="index.html" style="color:var(--oxblood); text-decoration:underline; text-underline-offset: 3px;">Back to public site</a>
+      </p>
+    </div>
+  </section>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  let role = "admin";
+  document.querySelectorAll("#roleToggle button").forEach(b => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#roleToggle button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      role = b.dataset.role;
+      document.getElementById("u").value = role === "admin" ? "admin" : "po";
+    });
+  });
+
+  function doLogin() {
+    const u = document.getElementById("u").value.trim();
+    const p = document.getElementById("p").value.trim();
+    const ok = (u === "admin" && p === "mindset2025") || (u === "po" && p === "mindset2025");
+    if (!ok) { flash("Invalid credentials"); return; }
+    localStorage.setItem("mindset.session", JSON.stringify({ role, username: u, since: Date.now() }));
+    logEvent("signed in", role === "admin" ? "as Administrator" : "as Placement Office");
+    window.location.href = "dashboard.html";
+  }
+</script>
+</body>
+</html>

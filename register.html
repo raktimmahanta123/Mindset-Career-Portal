@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>New Registration — Mindset Portal</title>
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  @media print {
+    body { background: #fff !important; }
+    body * { visibility: hidden; }
+    #receipt-print, #receipt-print * { visibility: visible; }
+    #receipt-print {
+      position: absolute; left: 0; top: 0; width: 100%;
+      background: #fff; box-shadow: none;
+    }
+    .portal-shell { display: block; }
+    .sidebar, .portal-head, .reg-form-card, .flash { display: none !important; }
+  }
+  .reg-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 24px;
+  }
+  .reg-form-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 36px;
+  }
+  .reg-title {
+    font-family: var(--f-display);
+    font-size: 30px; font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .reg-title em { font-style: italic; color: var(--oxblood); }
+  .reg-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 24px; }
+  .step-row { display: flex; gap: 8px; margin-bottom: 28px; }
+  .step { flex: 1; padding: 8px 10px; border:1px solid var(--rule); font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+  .step.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .step.done { background: var(--sage); color: var(--paper); border-color: var(--sage); }
+  .pay-block {
+    background: var(--paper-2);
+    border: 1px dashed var(--oxblood);
+    padding: 22px;
+    margin: 20px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pay-block .k {
+    font-family: var(--f-mono); font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .pay-block .v {
+    font-family: var(--f-display); font-size: 44px;
+    color: var(--oxblood); font-weight: 350; line-height: 1;
+  }
+  @media (max-width: 960px) {
+    .reg-wrap { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="portal-shell">
+  <div id="side-root"></div>
+
+  <main class="portal-main">
+    <div class="portal-head">
+      <div>
+        <div class="crumb">Portal · § 02 — Registration</div>
+        <h1>New <span class="italic">candidate</span> registration.</h1>
+      </div>
+      <div class="actions">
+        <a href="employees.html" class="btn btn-ghost">← Back to list</a>
+      </div>
+    </div>
+
+    <div class="reg-wrap">
+      <!-- FORM -->
+      <div class="reg-form-card">
+        <div class="num-tag" style="margin-bottom:8px">FORM · REG 01</div>
+        <div class="reg-title">Register &amp; <em>receive</em></div>
+        <div class="reg-sub">Candidate particulars → fee collection → receipt.</div>
+
+        <div class="step-row">
+          <div class="step active" id="s1">01 · Candidate</div>
+          <div class="step" id="s2">02 · Payment</div>
+          <div class="step" id="s3">03 · Receipt</div>
+        </div>
+
+        <form id="regForm" onsubmit="event.preventDefault(); confirmReg();">
+          <div class="field">
+            <label>Candidate Name ·</label>
+            <input name="name" required />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Department ·</label>
+              <select name="dept" required id="deptSel"></select>
+            </div>
+            <div class="field">
+              <label>Designation ·</label>
+              <input name="designation" required />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Contact Number ·</label>
+              <input name="phone" required placeholder="+91 ..." />
+            </div>
+            <div class="field">
+              <label>State ·</label>
+              <select name="state" required id="stateSel"></select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>District</label>
+              <input name="district" />
+            </div>
+            <div class="field">
+              <label>Town</label>
+              <input name="town" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Remarks</label>
+            <textarea name="remark" placeholder="Any notes about the candidate…"></textarea>
+          </div>
+
+          <div class="pay-block">
+            <div>
+              <div class="k">Registration fee</div>
+              <div class="v">₹300</div>
+            </div>
+            <div style="text-align:right; font-size:12px; color:var(--ink-soft); max-width:220px;">
+              Collected offline (UPI / cash). <br/>Enter transaction ID below to verify and confirm.
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Transaction ID ·</label>
+            <input name="txn" required placeholder="e.g. UPI8239KD019" style="font-family: var(--f-mono);" />
+          </div>
+
+          <button class="btn btn-oxblood" style="width:100%; justify-content:center; margin-top:12px;" type="submit">
+            Verify &amp; issue receipt →
+          </button>
+        </form>
+      </div>
+
+      <!-- RECEIPT PREVIEW -->
+      <div>
+        <div id="receipt-print" class="receipt">
+          <div class="r-head">
+            <div class="r-brand">
+              <span>Mind<em>set</em></span>
+              <span class="sub">Consultancy Pvt. Ltd. · Guwahati</span>
+            </div>
+            <div class="r-no">
+              Receipt No.
+              <strong id="rNo">MND-00000</strong>
+              <div id="rDate" style="margin-top:6px;">—</div>
+            </div>
+          </div>
+
+          <div class="r-body">
+            <div class="r-field"><div class="k">Candidate</div><div class="v" id="rName">—</div></div>
+            <div class="r-field"><div class="k">Contact</div><div class="v" id="rPhone">—</div></div>
+            <div class="r-field"><div class="k">Department</div><div class="v" id="rDept">—</div></div>
+            <div class="r-field"><div class="k">Designation</div><div class="v" id="rDesg">—</div></div>
+            <div class="r-field"><div class="k">Location</div><div class="v" id="rLoc">—</div></div>
+            <div class="r-field"><div class="k">Transaction ID</div><div class="v mono" id="rTxn" style="font-size:13px;">—</div></div>
+          </div>
+
+          <div class="r-amount">
+            <div>
+              <div class="k">Amount received</div>
+              <div style="font-size:11px; margin-top:6px; color:rgba(244,239,230,0.7)">Registration fee · Phase I</div>
+            </div>
+            <div class="v">₹300</div>
+          </div>
+
+          <div class="perforate"></div>
+
+          <div class="r-foot">
+            <div>
+              <strong style="color:var(--ink)">Mindset Consultancy Pvt. Ltd.</strong><br/>
+              2nd Floor, Dispur Chambers<br/>
+              G.S. Road, Guwahati – 781005<br/>
+              hello@mindset.co.in · +91 98640 00000
+            </div>
+            <div style="text-align:right; min-width:140px">
+              <em style="font-family:var(--f-display); font-style:italic; font-size:15px; color:var(--ink);">Thank you.</em><br/>
+              <span style="font-family:var(--f-mono); font-size:10px; letter-spacing:0.14em; text-transform:uppercase;">Authorised Signatory</span>
+              <div style="margin-top:22px; border-top:1px solid var(--ink); padding-top:6px; font-family:var(--f-mono); font-size:10px; color:var(--ink-soft)">for Mindset Pvt. Ltd.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+          <button class="btn btn-ghost" onclick="window.print()">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+            Print receipt
+          </button>
+          <button class="btn btn-oxblood" onclick="location.reload()">+ Start new</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  requireAuth();
+  document.getElementById("side-root").outerHTML = renderSidebar("register");
+
+  document.getElementById("stateSel").innerHTML = SEED.STATES.map(s => `<option>${s}</option>`).join("");
+  document.getElementById("deptSel").innerHTML = `<option value="">Select…</option>` + SEED.DEPARTMENTS.map(d => `<option>${d}</option>`).join("");
+
+  // Live preview as user types
+  const form = document.getElementById("regForm");
+  form.addEventListener("input", () => {
+    const f = Object.fromEntries(new FormData(form).entries());
+    document.getElementById("rName").textContent = f.name || "—";
+    document.getElementById("rPhone").textContent = f.phone || "—";
+    document.getElementById("rDept").textContent = f.dept || "—";
+    document.getElementById("rDesg").textContent = f.designation || "—";
+    document.getElementById("rLoc").textContent = [f.town, f.district, f.state].filter(Boolean).join(", ") || "—";
+    document.getElementById("rTxn").textContent = f.txn || "—";
+  });
+
+  // Prefill date
+  const today = new Date();
+  document.getElementById("rDate").textContent = today.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
+  function confirmReg() {
+    const f = Object.fromEntries(new FormData(form).entries());
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+
+    const list = DB.get("employees");
+    const dup = list.find(x => x.phone === f.phone);
+    if (dup) { flash("A candidate with this phone already exists"); return; }
+
+    const id = "CAN-" + (5001 + list.length);
+    const receiptNo = "MND-" + String(10000 + list.length).slice(1);
+    list.unshift({
+      id, name: f.name, dept: f.dept, designation: f.designation,
+      phone: f.phone, state: f.state, district: f.district, town: f.town,
+      remark: f.remark || "", status: "paid", txn: f.txn,
+      receiptNo, createdAt: Date.now()
+    });
+    DB.set("employees", list);
+    logEvent("issued receipt", f.name);
+
+    document.getElementById("rNo").textContent = receiptNo;
+    ["s1","s2","s3"].forEach((s, i) => {
+      document.getElementById(s).classList.toggle("done", i < 2);
+      document.getElementById(s).classList.toggle("active", i === 2);
+    });
+    flash("Payment verified · Receipt issued");
+
+    // Scroll receipt into view on small screens
+    document.getElementById("receipt-print").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+</script>
+</body>
+</html>

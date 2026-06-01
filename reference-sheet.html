@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Reframe Studios — Business Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Manrope:wght@300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F4EFE6;
+    --paper-2: #EDE6D8;
+    --ink: #14110F;
+    --ink-soft: #3B332D;
+    --rule: #C8BDA8;
+    --oxblood: #7A1F1A;
+    --sienna: #C9762D;
+    --sienna-soft: #E0A064;
+    --sage: #3F5D3D;
+    --danger: #8C2A1A;
+    --f-display: 'Fraunces', Georgia, serif;
+    --f-body: 'Manrope', -apple-system, sans-serif;
+    --f-mono: 'JetBrains Mono', monospace;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 10.5px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    padding: 18mm 18mm;
+    position: relative;
+    page-break-after: always;
+    background: var(--paper);
+    background-image:
+      radial-gradient(1200px 600px at 10% -10%, rgba(122,31,26,0.04), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(201,118,45,0.05), transparent 60%);
+    overflow: hidden;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* Top & bottom meta */
+  .masthead {
+    display: flex; justify-content: space-between;
+    font-family: var(--f-mono); font-size: 7.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink);
+    padding-bottom: 4mm;
+    border-bottom: 0.4px solid var(--rule);
+  }
+  .page-foot {
+    position: absolute; left: 18mm; right: 18mm; bottom: 10mm;
+    display: flex; justify-content: space-between;
+    font-family: var(--f-mono); font-size: 7px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft);
+    padding-top: 3mm;
+    border-top: 0.4px solid var(--rule);
+  }
+
+  /* Section numbering */
+  .sec-label {
+    font-family: var(--f-mono);
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--oxblood);
+    padding-top: 2mm; border-top: 1.5px solid var(--oxblood);
+    width: fit-content;
+    margin-bottom: 4mm;
+  }
+
+  /* Headings */
+  h1.display {
+    font-family: var(--f-display);
+    font-variation-settings: "opsz" 144, "SOFT" 40;
+    font-weight: 300;
+    font-size: 46px;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 6mm;
+  }
+  h1.display .italic {
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+    color: var(--oxblood);
+  }
+
+  h2.display {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 4mm;
+  }
+  h2.display .italic {
+    font-style: italic; color: var(--oxblood);
+    font-variation-settings: "opsz" 72, "SOFT" 100;
+  }
+
+  .lede {
+    font-family: var(--f-display);
+    font-size: 13px;
+    line-height: 1.45;
+    font-weight: 350;
+    font-style: italic;
+    color: var(--ink-soft);
+    max-width: 42em;
+    margin-bottom: 7mm;
+  }
+
+  p.small { font-size: 10px; color: var(--ink-soft); margin-bottom: 3mm; }
+  .mono { font-family: var(--f-mono); }
+  .italic { font-style: italic; }
+  .ox { color: var(--oxblood); }
+
+  /* Masthead brand */
+  .brand {
+    display: flex; align-items: baseline; gap: 8px;
+    font-family: var(--f-display);
+    font-size: 18px; font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-top: 6mm;
+  }
+  .brand .dot { width: 7px; height: 7px; background: var(--oxblood); border-radius: 50%; transform: translateY(-2px); }
+  .brand .sub {
+    font-family: var(--f-mono); font-size: 8px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-soft); margin-left: 2px; font-weight: 500;
+  }
+
+  /* ==================== PAGE 1 ==================== */
+  .card-identity {
+    background: var(--ink); color: var(--paper);
+    padding: 10mm;
+    margin-top: 6mm;
+    position: relative;
+  }
+  .card-identity .label {
+    font-family: var(--f-mono); font-size: 7.5px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--sienna); font-weight: 600;
+  }
+  .card-identity h3 {
+    font-family: var(--f-display);
+    font-size: 20px; font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-top: 2mm; margin-bottom: 8mm;
+  }
+  .card-identity .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6mm 10mm;
+  }
+  .card-identity .k {
+    font-family: var(--f-mono); font-size: 7px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--sienna); font-weight: 600;
+    margin-bottom: 1mm;
+  }
+  .card-identity .v {
+    font-family: var(--f-body); font-size: 11px; font-weight: 600;
+    color: var(--paper);
+  }
+  .card-identity .v.mono { font-family: var(--f-mono); letter-spacing: 0.02em; }
+
+  .compliance {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6mm 6mm;
+    margin-top: 6mm;
+  }
+  .comp-item .k {
+    font-family: var(--f-mono); font-size: 7.5px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 1mm;
+  }
+  .comp-item .v {
+    font-size: 13px; font-weight: 700;
+  }
+  .comp-item .note {
+    font-family: var(--f-mono); font-size: 7.5px; color: var(--ink-soft);
+    letter-spacing: 0.04em; margin-top: 0.5mm;
+  }
+  .comp-item.active .v { color: var(--sage); }
+  .comp-item.na .v { color: var(--ink-soft); }
+  .comp-item.todo .v { color: var(--oxblood); }
+
+  /* ==================== PAGE 2 ==================== */
+  .sig-box {
+    position: relative;
+    border: 0.8px solid var(--ink);
+    padding: 8mm 10mm;
+    margin-bottom: 8mm;
+    background: var(--paper);
+  }
+  .sig-box .corner {
+    position: absolute; width: 3mm; height: 3mm;
+    border: 0.8px solid var(--oxblood);
+  }
+  .sig-box .tl { top: -0.5mm; left: -0.5mm; border-right: 0; border-bottom: 0; }
+  .sig-box .tr { top: -0.5mm; right: -0.5mm; border-left: 0; border-bottom: 0; }
+  .sig-box .bl { bottom: -0.5mm; left: -0.5mm; border-right: 0; border-top: 0; }
+  .sig-box .br { bottom: -0.5mm; right: -0.5mm; border-left: 0; border-top: 0; }
+
+  .sig-box .name {
+    font-family: var(--f-display); font-size: 18px;
+    font-weight: 500; letter-spacing: -0.01em;
+  }
+  .sig-box .role {
+    font-size: 11px; margin-top: 1mm; margin-bottom: 4mm;
+    color: var(--ink-soft);
+  }
+  .sig-box .row {
+    font-family: var(--f-mono); font-size: 9px;
+    color: var(--ink); line-height: 1.8;
+  }
+  .sig-box .row .k { color: var(--ink-soft); display: inline-block; width: 28mm; }
+
+  .invoice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5mm;
+    margin-top: 3mm;
+  }
+  .inv-box {
+    border: 0.5px dashed var(--rule);
+    padding: 5mm 5mm;
+    min-height: 32mm;
+  }
+  .inv-box .label {
+    font-family: var(--f-mono); font-size: 7px; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--oxblood); margin-bottom: 2.5mm;
+  }
+  .inv-box .content {
+    font-family: var(--f-mono); font-size: 8.5px;
+    white-space: pre-line; color: var(--ink);
+    line-height: 1.55;
+  }
+
+  /* ==================== PAGE 3 ==================== */
+  .tier-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4mm;
+    margin-top: 4mm;
+    margin-bottom: 8mm;
+  }
+  .tier {
+    border: 0.6px solid var(--rule);
+    padding: 6mm 5mm;
+    min-height: 86mm;
+    background: var(--paper);
+  }
+  .tier.mid {
+    background: var(--ink); color: var(--paper); border-color: var(--ink);
+  }
+  .tier .name {
+    font-family: var(--f-mono); font-size: 8px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .tier.mid .name { color: var(--sienna-soft); }
+  .tier .price {
+    font-family: var(--f-display); font-size: 24px;
+    font-weight: 500; margin: 2mm 0 3mm; line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .tier.mid .price { color: var(--paper); }
+  .tier .rule { border-top: 0.5px solid var(--rule); margin-bottom: 4mm; }
+  .tier.mid .rule { border-color: rgba(244,239,230,0.2); }
+  .tier ul { list-style: none; }
+  .tier li {
+    font-size: 9px; line-height: 1.55;
+    padding-left: 4mm; position: relative;
+    margin-bottom: 2mm;
+    color: var(--ink-soft);
+  }
+  .tier.mid li { color: rgba(244,239,230,0.8); }
+  .tier li::before {
+    content: "";
+    position: absolute; left: 0; top: 1.6mm;
+    width: 1.2mm; height: 1.2mm; background: var(--oxblood);
+    border-radius: 50%;
+  }
+  .tier.mid li::before { background: var(--sienna-soft); }
+  .tier li.head { font-weight: 700; color: var(--ink); }
+  .tier.mid li.head { color: var(--paper); }
+
+  .milestones {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4mm;
+    margin: 4mm 0 6mm;
+  }
+  .ms .pct {
+    font-family: var(--f-display); font-size: 28px; font-weight: 500;
+    color: var(--oxblood); line-height: 1;
+  }
+  .ms .lbl {
+    font-size: 11px; font-weight: 700; margin-top: 2mm;
+  }
+  .ms .note {
+    font-size: 9px; color: var(--ink-soft); margin-top: 1mm;
+  }
+
+  .extras-head {
+    font-family: var(--f-mono); font-size: 8px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--oxblood);
+    padding-top: 3mm; border-top: 0.4px solid var(--rule);
+    margin-bottom: 3mm;
+  }
+  .extra-row {
+    display: grid;
+    grid-template-columns: 44mm 1fr;
+    padding: 1.5mm 0;
+    font-size: 9.5px;
+  }
+  .extra-row .k {
+    font-family: var(--f-mono); font-size: 8px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .extra-row .v { font-weight: 600; }
+
+  /* ==================== PAGE 4 ==================== */
+  .script-block {
+    margin-bottom: 5.5mm;
+  }
+  .script-block .q {
+    font-size: 10px; font-weight: 700; color: var(--oxblood);
+    margin-bottom: 1.5mm;
+  }
+  .script-block .a {
+    font-family: var(--f-display); font-style: italic;
+    font-size: 10.5px; line-height: 1.5;
+    color: var(--ink);
+    padding-left: 5mm; position: relative;
+    border-left: 1.5px solid var(--sienna);
+  }
+
+  .todo-row {
+    display: grid;
+    grid-template-columns: 8mm 1fr auto;
+    padding: 2mm 0;
+    border-bottom: 0.4px dashed var(--rule);
+    font-size: 10px;
+    align-items: center;
+  }
+  .todo-row .chk {
+    font-family: var(--f-mono); font-weight: 700;
+    color: var(--ink);
+  }
+  .todo-row.done .chk { color: var(--sage); }
+  .todo-row .when {
+    font-family: var(--f-mono); font-size: 8px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .todo-row.done .item { text-decoration: line-through; color: var(--ink-soft); }
+
+  .quote-strip {
+    background: var(--ink); color: var(--paper);
+    padding: 6mm 8mm;
+    margin-top: 6mm;
+    position: relative;
+  }
+  .quote-strip .lbl {
+    font-family: var(--f-mono); font-size: 8px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--sienna-soft);
+    margin-bottom: 2mm;
+  }
+  .quote-strip .quote {
+    font-family: var(--f-display); font-style: italic;
+    font-size: 15px; font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  /* Big footer mark */
+  .big-mark {
+    font-family: var(--f-display);
+    font-size: 120px; line-height: 0.85;
+    font-weight: 300; letter-spacing: -0.05em;
+    color: var(--ink);
+    opacity: 0.06;
+    position: absolute;
+    bottom: -20mm; right: -10mm;
+    user-select: none;
+    pointer-events: none;
+  }
+  .big-mark .italic { font-style: italic; color: var(--oxblood); }
+
+</style>
+</head>
+
+<body>
+
+<!-- ============================ PAGE 1 ============================ -->
+<section class="page">
+
+  <div class="masthead">
+    <span>Reframe Studios · Business Reference</span>
+    <span>Identity</span>
+  </div>
+
+  <div class="brand">
+    <span class="dot"></span>Reframe Studios
+    <span class="sub">EST. 2024 · GUWAHATI · MSME REGISTERED</span>
+  </div>
+
+  <div style="margin-top: 18mm">
+    <h1 class="display">
+      A business <span class="italic">prospectus,</span><br/>
+      <span class="italic">considered.</span>
+    </h1>
+    <p class="lede">
+      A one-page reference of business credentials, pitch numbers, invoice language and next-action
+      items for Reframe Studios — a sole-proprietorship web design &amp; development practice based
+      in Guwahati, Assam.
+    </p>
+  </div>
+
+  <!-- Identity dark card -->
+  <div class="card-identity">
+    <div class="label">§ 01 — Credentials</div>
+    <h3>Business particulars</h3>
+
+    <div class="grid">
+      <div>
+        <div class="k">Entity name</div>
+        <div class="v">Reframe Studios</div>
+      </div>
+      <div>
+        <div class="k">Registered address</div>
+        <div class="v" style="font-size:10px; line-height:1.45">
+          Meghmallar Housing Complex,<br/>
+          Sewali Path, Hatigaon,<br/>
+          Guwahati, Kamrup Metropolitan,<br/>
+          Assam — 781038, India
+        </div>
+      </div>
+
+      <div>
+        <div class="k">Proprietor</div>
+        <div class="v">Raktim Mahanta</div>
+      </div>
+      <div>
+        <div class="k">Business type</div>
+        <div class="v">Sole Proprietorship</div>
+      </div>
+
+      <div>
+        <div class="k">MSME category</div>
+        <div class="v">Micro Enterprise</div>
+      </div>
+      <div>
+        <div class="k">GST status</div>
+        <div class="v">Not registered (below threshold)</div>
+      </div>
+
+      <div>
+        <div class="k">Udyam Registration</div>
+        <div class="v mono">UDYAM-AS-03-0088857</div>
+      </div>
+      <div>
+        <div class="k">PAN</div>
+        <div class="v mono">CCPPM7203Q</div>
+      </div>
+
+      <div>
+        <div class="k">Primary activity (NIC)</div>
+        <div class="v">62013 — Web design &amp; development</div>
+      </div>
+      <div>
+        <div class="k">Bank (SBI)</div>
+        <div class="v mono" style="font-size:10px">SBIN0003030 · 38447117396</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compliance strip -->
+  <div class="sec-label" style="margin-top:8mm">§ 02 — Compliance status</div>
+
+  <div class="compliance">
+    <div class="comp-item active">
+      <div class="k">Udyam (MSME)</div>
+      <div class="v">Active</div>
+      <div class="note">Issued today</div>
+    </div>
+    <div class="comp-item active">
+      <div class="k">PAN</div>
+      <div class="v">Active</div>
+      <div class="note">Personal / proprietor</div>
+    </div>
+    <div class="comp-item active">
+      <div class="k">ITR-3 filing</div>
+      <div class="v">Filed</div>
+      <div class="note">FY 2024-25</div>
+    </div>
+    <div class="comp-item na">
+      <div class="k">GST registration</div>
+      <div class="v">Not applicable</div>
+      <div class="note">Services < ₹20L threshold</div>
+    </div>
+    <div class="comp-item todo">
+      <div class="k">Tax audit review</div>
+      <div class="v">To-do</div>
+      <div class="note">Book CA this week</div>
+    </div>
+    <div class="comp-item todo">
+      <div class="k">Current account</div>
+      <div class="v">To-do</div>
+      <div class="note">After 1st client payment</div>
+    </div>
+  </div>
+
+  <div class="big-mark">Re<span class="italic">frame</span>.</div>
+
+  <div class="page-foot">
+    <span>UDYAM-AS-03-0088857 · GUWAHATI · v1.0</span>
+    <span>Page 01 / 04</span>
+  </div>
+</section>
+
+
+<!-- ============================ PAGE 2 ============================ -->
+<section class="page">
+
+  <div class="masthead">
+    <span>Reframe Studios · Business Reference</span>
+    <span>Signature &amp; Invoice</span>
+  </div>
+
+  <div style="margin-top: 10mm">
+    <div class="sec-label">§ 03 — Signature block</div>
+    <h2 class="display">Copy-paste <span class="italic">ready.</span></h2>
+    <p class="small" style="max-width:36em">
+      Use this block at the bottom of every proposal, contract, invoice and email signature.
+      Update the phone/email when your domain is live.
+    </p>
+  </div>
+
+  <!-- Signature box -->
+  <div class="sig-box">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+
+    <div class="name">Raktim Mahanta</div>
+    <div class="role">Proprietor — Reframe Studios</div>
+
+    <div class="row"><span class="k">Udyam Reg. No.</span> UDYAM-AS-03-0088857</div>
+    <div class="row"><span class="k">PAN</span> CCPPM7203Q</div>
+    <div class="row"><span class="k">Address</span> Meghmallar Housing Complex, Sewali Path, Hatigaon, Guwahati — 781038</div>
+    <div class="row"><span class="k">Phone</span> +91 XXXXX XXXXX</div>
+    <div class="row"><span class="k">Email</span> raktim@reframestudios.in</div>
+    <div class="row"><span class="k">Web</span> reframestudios.in</div>
+  </div>
+
+  <div class="sec-label">§ 04 — Invoice language</div>
+  <h2 class="display">For every <span class="italic">invoice</span> you raise.</h2>
+  <p class="small" style="max-width:42em">
+    Four blocks to copy into every invoice. They establish legitimacy, trigger MSME payment
+    protections under the MSMED Act 2006, and pre-empt common accounts-team questions.
+  </p>
+
+  <div class="invoice-grid">
+    <div class="inv-box">
+      <div class="label">Header / masthead</div>
+      <div class="content">REFRAME STUDIOS
+A sole-proprietorship MSME
+Udyam-AS-03-0088857 · PAN CCPPM7203Q</div>
+    </div>
+
+    <div class="inv-box">
+      <div class="label">Tax / GST line</div>
+      <div class="content">Not registered under GST —
+turnover below ₹20 lakh threshold
+for taxable services.</div>
+    </div>
+
+    <div class="inv-box">
+      <div class="label">Payment terms</div>
+      <div class="content">Payable within 15 days of invoice date.
+Late payments attract 2% monthly interest.
+Governed by the MSMED Act, 2006.</div>
+    </div>
+
+    <div class="inv-box">
+      <div class="label">Bank details</div>
+      <div class="content">Account Name  : Raktim Mahanta
+Bank / Branch : State Bank of India
+IFSC          : SBIN0003030
+Account No.   : 38447117396</div>
+    </div>
+  </div>
+
+  <div class="sec-label" style="margin-top:6mm">§ 04a — Why this matters</div>
+  <p class="small" style="max-width:50em; font-style:italic; font-family:var(--f-display); font-size:11.5px;">
+    As a Udyam-registered micro enterprise, every invoice you raise is protected under the
+    <strong>MSMED Act 2006</strong> — clients must clear dues within 45 days, failing which they owe
+    compound interest at <strong>3× the RBI bank rate</strong>. This is real legal leverage.
+    Name-drop the Act on proposals; it signals you are a registered entity, not a hobby freelancer.
+  </p>
+
+  <div class="big-mark">In<span class="italic">voice</span>.</div>
+
+  <div class="page-foot">
+    <span>UDYAM-AS-03-0088857 · GUWAHATI · v1.0</span>
+    <span>Page 02 / 04</span>
+  </div>
+</section>
+
+
+<!-- ============================ PAGE 3 ============================ -->
+<section class="page">
+
+  <div class="masthead">
+    <span>Reframe Studios · Business Reference</span>
+    <span>Pitch &amp; Pricing</span>
+  </div>
+
+  <div style="margin-top: 10mm">
+    <div class="sec-label">§ 05 — Mindset pitch · three-tier pricing</div>
+    <h2 class="display">What to <span class="italic">quote.</span></h2>
+    <p class="small" style="max-width:44em">
+      Present all three tiers side-by-side. Clients self-select the middle option when anchored
+      this way. Walk-away floor: <strong>₹1,00,000</strong>. Deposit before any code or source is
+      shared: <strong>40%</strong>. Never discount based on verbal promises of future work.
+    </p>
+  </div>
+
+  <div class="tier-wrap">
+    <div class="tier">
+      <div class="name">Essential</div>
+      <div class="price">₹85,000</div>
+      <div class="rule"></div>
+      <ul>
+        <li class="head">Phase 1 as specced in client PDF</li>
+        <li>3 months hosting included</li>
+        <li>2 rounds of revisions</li>
+        <li>Single admin account</li>
+        <li>30-day post-launch support</li>
+      </ul>
+    </div>
+
+    <div class="tier mid">
+      <div class="name">Professional — recommended</div>
+      <div class="price">₹1,45,000</div>
+      <div class="rule"></div>
+      <ul>
+        <li class="head">Everything in Essential, plus:</li>
+        <li>Admin + Placement Office roles</li>
+        <li>Activity log + CSV/Excel export</li>
+        <li>Printable receipts</li>
+        <li>Data-validation + duplicate check</li>
+        <li>Future-ready schema for Phase 2</li>
+        <li>Dashboard analytics</li>
+        <li>4 rounds of revisions</li>
+        <li>90-day post-launch support</li>
+      </ul>
+    </div>
+
+    <div class="tier">
+      <div class="name">Signature</div>
+      <div class="price">₹2,25,000</div>
+      <div class="rule"></div>
+      <ul>
+        <li class="head">Everything in Professional, plus:</li>
+        <li>Custom domain + SSL setup</li>
+        <li>Automated daily backups</li>
+        <li>SEO setup for landing page</li>
+        <li>WhatsApp Business integration</li>
+        <li>Onboarding + team training</li>
+        <li>6 months AMC included</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec-label">§ 06 — Payment milestones (non-negotiable)</div>
+  <div class="milestones">
+    <div class="ms">
+      <div class="pct">40%</div>
+      <div class="lbl">Kickoff deposit</div>
+      <div class="note">Before any code or source is shared</div>
+    </div>
+    <div class="ms">
+      <div class="pct">25%</div>
+      <div class="lbl">Design approval</div>
+      <div class="note">Landing page + admin UI approved</div>
+    </div>
+    <div class="ms">
+      <div class="pct">25%</div>
+      <div class="lbl">Beta delivery</div>
+      <div class="note">Working staging URL, client tests</div>
+    </div>
+    <div class="ms">
+      <div class="pct">10%</div>
+      <div class="lbl">Go-live + handover</div>
+      <div class="note">After deployment + training</div>
+    </div>
+  </div>
+
+  <div class="extras-head">Recurring revenue + add-ons</div>
+
+  <div class="extra-row"><div class="k">AMC (annual)</div><div class="v">₹24,000 / year — billed as ₹2,000/month</div></div>
+  <div class="extra-row"><div class="k">Hourly (out of scope)</div><div class="v">₹1,500 / hour</div></div>
+  <div class="extra-row"><div class="k">Phase 2 ceiling</div><div class="v">₹2,00,000 (employer + employee logins, job posts, notifications)</div></div>
+  <div class="extra-row"><div class="k">Volume discount</div><div class="v">10% from project #2 onwards — ONLY with a signed Preferred Partner MSA</div></div>
+  <div class="extra-row"><div class="k">Change request</div><div class="v">Billed at hourly rate, approved by email before work begins</div></div>
+  <div class="extra-row"><div class="k">Kill fee</div><div class="v">Completed milestones + 25% of remaining contract value</div></div>
+
+  <div class="page-foot">
+    <span>UDYAM-AS-03-0088857 · GUWAHATI · v1.0</span>
+    <span>Page 03 / 04</span>
+  </div>
+</section>
+
+
+<!-- ============================ PAGE 4 ============================ -->
+<section class="page">
+
+  <div class="masthead">
+    <span>Reframe Studios · Business Reference</span>
+    <span>Negotiation &amp; Next</span>
+  </div>
+
+  <div style="margin-top: 10mm">
+    <div class="sec-label">§ 07 — Scripts for the meeting</div>
+    <h2 class="display">What to <span class="italic">say.</span></h2>
+  </div>
+
+  <div style="margin-top: 5mm">
+
+    <div class="script-block">
+      <div class="q">When they say: "I have many projects coming, can you discount?"</div>
+      <div class="a">
+        "My rate stays the same per project. Once we sign a Preferred Partner Agreement covering
+        3+ projects with defined scope and an MSA, I unlock a 10% volume discount from the second
+        project onward and priority turnaround. That way the discount is tied to real commitments,
+        not verbal promises."
+      </div>
+    </div>
+
+    <div class="script-block">
+      <div class="q">When they ask: "Are you a registered company?"</div>
+      <div class="a">
+        "Reframe Studios is a registered MSME sole-proprietorship under the Udyam Registration
+        system. For this engagement scale, that's the optimal structure — payments go to a properly
+        registered entity, and per the MSMED Act you as client get built-in legal protections. Our
+        Udyam certificate and PAN are on the contract."
+      </div>
+    </div>
+
+    <div class="script-block">
+      <div class="q">When they push on price:</div>
+      <div class="a">
+        "I understand budget is tight. I won't lower the rate — but I can adjust scope. Which
+        features in the Professional tier are not critical to you for Phase 1? We can move them to
+        Phase 2 and bring Phase 1 number down accordingly."
+      </div>
+    </div>
+
+    <div class="script-block">
+      <div class="q">When they ask for source code before signing:</div>
+      <div class="a">
+        "The demo is hosted on our infrastructure for evaluation. Source code transfers on final
+        milestone payment — standard practice, and in our contract. I can schedule a screen-share
+        walk-through of the code at any stage if you want transparency on progress."
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sec-label" style="margin-top:2mm">§ 08 — Your next 7 days</div>
+
+  <div style="margin-top: 3mm">
+    <div class="todo-row done">
+      <span class="chk">[✓]</span>
+      <span class="item">Register Reframe Studios on Udyam portal</span>
+      <span class="when">Done · today</span>
+    </div>
+    <div class="todo-row">
+      <span class="chk">[ ]</span>
+      <span class="item">Download Udyam certificate PDF + save to 3 locations (Drive, email, local)</span>
+      <span class="when">Today</span>
+    </div>
+    <div class="todo-row">
+      <span class="chk">[ ]</span>
+      <span class="item">Update email signature, invoice template, pitch deck with Udyam number</span>
+      <span class="when">Today</span>
+    </div>
+    <div class="todo-row">
+      <span class="chk">[ ]</span>
+      <span class="item">Send Mindset proposal with 3-tier pricing + milestone schedule</span>
+      <span class="when">Within 24h</span>
+    </div>
+    <div class="todo-row">
+      <span class="chk">[ ]</span>
+      <span class="item">Book 30-min call with a Guwahati CA (F&amp;O ITR-3 review, 44AB audit check)</span>
+      <span class="when">This week</span>
+    </div>
+    <div class="todo-row">
+      <span class="chk">[ ]</span>
+      <span class="item">Prepare contract template (40% deposit + milestones + IP transfer clause)</span>
+      <span class="when">Before pitch</span>
+    </div>
+    <div class="todo-row">
+      <span class="chk">[ ]</span>
+      <span class="item">Host the Mindset demo on Vercel under a Reframe subdomain</span>
+      <span class="when">Before pitch</span>
+    </div>
+    <div class="todo-row">
+      <span class="chk">[ ]</span>
+      <span class="item">Open current account for Reframe Studios</span>
+      <span class="when">After 1st payment</span>
+    </div>
+  </div>
+
+  <div class="quote-strip">
+    <div class="lbl">Remember</div>
+    <div class="quote">
+      "Price the first project at what you'd want to earn on project #5. The first quote sets the
+      ceiling for every client that client refers."
+    </div>
+  </div>
+
+  <div class="big-mark">Re<span class="italic">frame</span>.</div>
+
+  <div class="page-foot">
+    <span>BUILT FOR RAKTIM MAHANTA · REFRAME STUDIOS · GUWAHATI</span>
+    <span>Page 04 / 04</span>
+  </div>
+</section>
+
+</body>
+</html>

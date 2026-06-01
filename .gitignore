@@ -1,0 +1,27 @@
+# Local Netlify folder
+.netlify
+.vercel
+
+# macOS metadata
+.DS_Store
+
+# Node (when we add the backend)
+node_modules/
+npm-debug.log*
+
+# Runtime data (regenerated from seed on first server start)
+server/data/db.json
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Internal proposal / reference materials — not part of the code deliverable.
+# These were used during the sales / proposal phase and contain pricing,
+# internal positioning, and other materials that shouldn't ship with code.
+proposal/
+Reframe-Studios-Reference-Sheet.pdf
