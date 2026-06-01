@@ -214,57 +214,62 @@
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
-  requireAuth();
-  document.getElementById("side-root").outerHTML = renderSidebar("register");
-
-  document.getElementById("stateSel").innerHTML = SEED.STATES.map(s => `<option>${s}</option>`).join("");
-  document.getElementById("deptSel").innerHTML = `<option value="">Select…</option>` + SEED.DEPARTMENTS.map(d => `<option>${d}</option>`).join("");
-
-  // Live preview as user types
+  // form needs to be declared at top level so confirmReg() can see it
   const form = document.getElementById("regForm");
-  form.addEventListener("input", () => {
-    const f = Object.fromEntries(new FormData(form).entries());
-    document.getElementById("rName").textContent = f.name || "—";
-    document.getElementById("rPhone").textContent = f.phone || "—";
-    document.getElementById("rDept").textContent = f.dept || "—";
-    document.getElementById("rDesg").textContent = f.designation || "—";
-    document.getElementById("rLoc").textContent = [f.town, f.district, f.state].filter(Boolean).join(", ") || "—";
-    document.getElementById("rTxn").textContent = f.txn || "—";
-  });
 
-  // Prefill date
-  const today = new Date();
-  document.getElementById("rDate").textContent = today.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-
-  function confirmReg() {
+  async function confirmReg() {
     const f = Object.fromEntries(new FormData(form).entries());
     if (!form.checkValidity()) { form.reportValidity(); return; }
-
-    const list = DB.get("employees");
-    const dup = list.find(x => x.phone === f.phone);
-    if (dup) { flash("A candidate with this phone already exists"); return; }
-
-    const id = "CAN-" + (5001 + list.length);
-    const receiptNo = "MND-" + String(10000 + list.length).slice(1);
-    list.unshift({
-      id, name: f.name, dept: f.dept, designation: f.designation,
-      phone: f.phone, state: f.state, district: f.district, town: f.town,
-      remark: f.remark || "", status: "paid", txn: f.txn,
-      receiptNo, createdAt: Date.now()
-    });
-    DB.set("employees", list);
-    logEvent("issued receipt", f.name);
-
-    document.getElementById("rNo").textContent = receiptNo;
-    ["s1","s2","s3"].forEach((s, i) => {
-      document.getElementById(s).classList.toggle("done", i < 2);
-      document.getElementById(s).classList.toggle("active", i === 2);
-    });
-    flash("Payment verified · Receipt issued");
-
-    // Scroll receipt into view on small screens
-    document.getElementById("receipt-print").scrollIntoView({ behavior: "smooth", block: "start" });
+    try {
+      const record = await API.employees.create({
+        name: f.name,
+        dept: f.dept,
+        designation: f.designation,
+        phone: f.phone,
+        state: f.state,
+        district: f.district,
+        town: f.town,
+        remark: f.remark || "",
+        status: "paid",
+        txn: f.txn,
+        amountPaid: 300,
+      });
+      document.getElementById("rNo").textContent = record.receiptNumber || record.id;
+      ["s1","s2","s3"].forEach((s, i) => {
+        document.getElementById(s).classList.toggle("done", i < 2);
+        document.getElementById(s).classList.toggle("active", i === 2);
+      });
+      flash("Payment verified · Receipt issued");
+      document.getElementById("receipt-print").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (err) {
+      flash(err.message || "Could not save candidate");
+    }
   }
+
+  (async () => {
+    const user = await requireAuth();
+    if (!user) return;
+    document.getElementById("side-root").outerHTML = renderSidebar("register");
+
+    const SEED_LOCAL = typeof SEED !== "undefined" ? SEED : { STATES: [], DEPARTMENTS: [] };
+    document.getElementById("stateSel").innerHTML = SEED_LOCAL.STATES.map(s => `<option>${s}</option>`).join("");
+    document.getElementById("deptSel").innerHTML = `<option value="">Select…</option>` + SEED_LOCAL.DEPARTMENTS.map(d => `<option>${d}</option>`).join("");
+
+    // Live preview as user types
+    form.addEventListener("input", () => {
+      const f = Object.fromEntries(new FormData(form).entries());
+      document.getElementById("rName").textContent = f.name || "—";
+      document.getElementById("rPhone").textContent = f.phone || "—";
+      document.getElementById("rDept").textContent = f.dept || "—";
+      document.getElementById("rDesg").textContent = f.designation || "—";
+      document.getElementById("rLoc").textContent = [f.town, f.district, f.state].filter(Boolean).join(", ") || "—";
+      document.getElementById("rTxn").textContent = f.txn || "—";
+    });
+
+    // Prefill date
+    const today = new Date();
+    document.getElementById("rDate").textContent = today.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  })();
 </script>
 </body>
 </html>

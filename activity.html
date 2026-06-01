@@ -53,7 +53,6 @@
       </div>
       <div class="actions">
         <button class="btn btn-ghost" onclick="exportLogs()">Export .csv</button>
-        <button class="btn btn-oxblood" onclick="clearLogs()">Clear log</button>
       </div>
     </div>
 
@@ -76,11 +75,7 @@
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
-  requireAuth();
-  document.getElementById("side-root").outerHTML = renderSidebar("activity");
-
   let query = "";
-  document.getElementById("q").addEventListener("input", e => { query = e.target.value.toLowerCase(); render(); });
 
   function render() {
     let logs = DB.get("logs");
@@ -92,7 +87,7 @@
       <div class="log-row">
         <span class="time">${new Date(l.t).toLocaleString("en-IN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" })}</span>
         <span class="who ${l.user.toLowerCase().startsWith('po') ? 'po' : ''}">${l.user}</span>
-        <span class="what">${l.action} <strong>${l.target}</strong></span>
+        <span class="what">${l.action} <strong>${l.target || ""}</strong></span>
         <span class="tag-cell">${formatTime(l.t)}</span>
       </div>
     `).join("") || `<div style="padding:40px; text-align:center; color:var(--ink-soft)">No events match.</div>`;
@@ -103,20 +98,18 @@
       timestamp: new Date(l.t).toISOString(),
       user: l.user,
       action: l.action,
-      target: l.target
+      target: l.target || "",
     }));
     exportCSV(rows, "mindset-activity.csv");
   }
 
-  function clearLogs() {
-    if (!confirm("Clear all log entries? This cannot be undone.")) return;
-    DB.set("logs", []);
-    logEvent("cleared the activity log", "all entries");
-    flash("Log cleared");
+  (async () => {
+    const user = await requireAuth();
+    if (!user) return;
+    document.getElementById("side-root").outerHTML = renderSidebar("activity");
+    document.getElementById("q").addEventListener("input", e => { query = e.target.value.toLowerCase(); render(); });
     render();
-  }
-
-  render();
+  })();
 </script>
 </body>
 </html>

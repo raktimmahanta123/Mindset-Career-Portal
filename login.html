@@ -85,14 +85,15 @@
     });
   });
 
-  function doLogin() {
+  async function doLogin() {
     const u = document.getElementById("u").value.trim();
     const p = document.getElementById("p").value.trim();
-    const ok = (u === "admin" && p === "mindset2025") || (u === "po" && p === "mindset2025");
-    if (!ok) { flash("Invalid credentials"); return; }
-    localStorage.setItem("mindset.session", JSON.stringify({ role, username: u, since: Date.now() }));
-    logEvent("signed in", role === "admin" ? "as Administrator" : "as Placement Office");
-    window.location.href = "dashboard.html";
+    try {
+      await API.login(u, p);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      flash(err.message || "Invalid credentials");
+    }
   }
 </script>
 </body>

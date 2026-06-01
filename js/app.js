@@ -1,44 +1,252 @@
 /* ===========================================================
-   MINDSET — Core App Logic (localStorage store + helpers)
+   MINDSET CAREER — Frontend client
+
+   Talks to the Express API in server/index.js. Keeps a small
+   in-memory cache (STATE) so template render code can read
+   data synchronously (DB.get("employers")) while mutations
+   and the initial load happen asynchronously via the API.
+
+   Configuration:
+     window.MINDSET_API_BASE — base URL of the API.
+     Defaults to http://localhost:4000 in development.
+     Set on window before this script loads to override for prod.
    =========================================================== */
 
-const STORE_KEYS = {
-  employers: "mindset.employers",
-  employees: "mindset.employees",
-  logs:      "mindset.logs",
-  session:   "mindset.session"
+const API_BASE = (typeof window !== "undefined" && window.MINDSET_API_BASE)
+  || "http://localhost:4000";
+
+const TOKEN_KEY = "mindset.token";
+const USER_KEY = "mindset.user";
+
+/* ---------- In-memory cache (refilled from server on each page load) ---------- */
+const STATE = {
+  token: "",
+  user: null,
+  employers: [],
+  employees: [],
+  activityLog: [],
 };
 
-const DB = {
-  init() {
-    if (!localStorage.getItem(STORE_KEYS.employers)) {
-      const seeded = SEED.SEED_EMPLOYERS.map((e, i) => ({ id: "EMP-" + (1001 + i), ...e, createdAt: Date.now() - (i * 86400000) }));
-      localStorage.setItem(STORE_KEYS.employers, JSON.stringify(seeded));
-    }
-    if (!localStorage.getItem(STORE_KEYS.employees)) {
-      const seeded = SEED.SEED_EMPLOYEES.map((e, i) => ({ id: "CAN-" + (5001 + i), ...e, createdAt: Date.now() - (i * 43200000) }));
-      localStorage.setItem(STORE_KEYS.employees, JSON.stringify(seeded));
-    }
-    if (!localStorage.getItem(STORE_KEYS.logs)) {
-      localStorage.setItem(STORE_KEYS.logs, JSON.stringify(SEED.SEED_LOGS));
-    }
-  },
-  get(key) { return JSON.parse(localStorage.getItem(STORE_KEYS[key]) || "[]"); },
-  set(key, val) { localStorage.setItem(STORE_KEYS[key], JSON.stringify(val)); },
-  reset() {
-    Object.values(STORE_KEYS).forEach(k => localStorage.removeItem(k));
-    DB.init();
-  }
-};
-
-function logEvent(action, target) {
-  const session = JSON.parse(localStorage.getItem(STORE_KEYS.session) || "{}");
-  const who = session.role === "admin" ? "Admin" : (session.role === "po" ? "PO 01" : "System");
-  const logs = DB.get("logs");
-  logs.unshift({ t: Date.now(), user: who, action, target });
-  DB.set("logs", logs.slice(0, 100));
+function loadTokenFromStorage() {
+  STATE.token = localStorage.getItem(TOKEN_KEY) || "";
+  try { STATE.user = JSON.parse(localStorage.getItem(USER_KEY) || "null"); }
+  catch { STATE.user = null; }
 }
 
+function persistSession(token, user) {
+  STATE.token = token;
+  STATE.user = user;
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+function clearSession() {
+  STATE.token = "";
+  STATE.user = null;
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+
+/* ---------- Low-level fetch helper ---------- */
+async function api(path, options = {}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(STATE.token ? { Authorization: `Bearer ${STATE.token}` } : {}),
+    ...(options.headers || {}),
+  };
+  const res = await fetch(API_BASE + path, { ...options, headers });
+  const ct = res.headers.get("content-type") || "";
+  const body = ct.includes("application/json") ? await res.json().catch(() => null) : null;
+  if (!res.ok) {
+    if (res.status === 401) {
+      clearSession();
+      if (!location.pathname.endsWith("login.html") && !location.pathname.endsWith("index.html") && location.pathname !== "/") {
+        location.href = "login.html";
+      }
+    }
+    throw new Error(body?.message || res.statusText || "Request failed");
+  }
+  return body;
+}
+
+/* ---------- High-level API (one method per resource action) ---------- */
+const API = {
+  async login(username, password) {
+    const r = await api("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    persistSession(r.token, r.user);
+    return r;
+  },
+  async logout() {
+    try { await api("/api/auth/logout", { method: "POST" }); } catch { /* ignore */ }
+    clearSession();
+  },
+  async bootstrap() {
+    const r = await api("/api/bootstrap");
+    STATE.user = r.user;
+    STATE.employers = r.employers || [];
+    STATE.employees = r.employees || [];
+    STATE.activityLog = r.activityLog || [];
+    return r;
+  },
+  async changePassword(currentPassword, newPassword) {
+    return api("/api/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
+  async resetPassword(username) {
+    return api("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ username }),
+    });
+  },
+
+  employers: {
+    async create(data) {
+      const r = await api("/api/employers", { method: "POST", body: JSON.stringify(data) });
+      STATE.employers = [r, ...STATE.employers];
+      return r;
+    },
+    async update(id, data) {
+      const r = await api(`/api/employers/${encodeURIComponent(id)}`, {
+        method: "PUT", body: JSON.stringify(data),
+      });
+      STATE.employers = STATE.employers.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async remark(id, remark) {
+      const r = await api(`/api/employers/${encodeURIComponent(id)}/remark`, {
+        method: "PATCH", body: JSON.stringify({ remark }),
+      });
+      STATE.employers = STATE.employers.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async followup(id, note) {
+      const r = await api(`/api/employers/${encodeURIComponent(id)}/followups`, {
+        method: "POST", body: JSON.stringify({ note }),
+      });
+      STATE.employers = STATE.employers.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async archive(id) {
+      const r = await api(`/api/employers/${encodeURIComponent(id)}/archive`, { method: "PATCH" });
+      STATE.employers = STATE.employers.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async remove(id) {
+      await api(`/api/employers/${encodeURIComponent(id)}`, { method: "DELETE" });
+      STATE.employers = STATE.employers.filter(x => x.id !== id);
+    },
+    async bulk(rows) {
+      const r = await api("/api/employers/bulk", { method: "POST", body: JSON.stringify({ rows }) });
+      if (r.inserted?.length) {
+        STATE.employers = [...r.inserted].reverse().concat(STATE.employers);
+      }
+      return r;
+    },
+  },
+
+  employees: {
+    async create(data) {
+      const r = await api("/api/employees", { method: "POST", body: JSON.stringify(data) });
+      STATE.employees = [r, ...STATE.employees];
+      return r;
+    },
+    async update(id, data) {
+      const r = await api(`/api/employees/${encodeURIComponent(id)}`, {
+        method: "PUT", body: JSON.stringify(data),
+      });
+      STATE.employees = STATE.employees.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async remark(id, remark) {
+      const r = await api(`/api/employees/${encodeURIComponent(id)}/remark`, {
+        method: "PATCH", body: JSON.stringify({ remark }),
+      });
+      STATE.employees = STATE.employees.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async followup(id, note) {
+      const r = await api(`/api/employees/${encodeURIComponent(id)}/followups`, {
+        method: "POST", body: JSON.stringify({ note }),
+      });
+      STATE.employees = STATE.employees.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async archive(id) {
+      const r = await api(`/api/employees/${encodeURIComponent(id)}/archive`, { method: "PATCH" });
+      STATE.employees = STATE.employees.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async remove(id) {
+      await api(`/api/employees/${encodeURIComponent(id)}`, { method: "DELETE" });
+      STATE.employees = STATE.employees.filter(x => x.id !== id);
+    },
+    async bulk(rows) {
+      const r = await api("/api/employees/bulk", { method: "POST", body: JSON.stringify({ rows }) });
+      if (r.inserted?.length) {
+        STATE.employees = [...r.inserted].reverse().concat(STATE.employees);
+      }
+      return r;
+    },
+  },
+};
+
+/* ---------- Backward-compat shim for old DB.get/set patterns ----------
+   The existing page templates call `DB.get("employers")` synchronously
+   inside render functions. We keep that working by reading from the
+   in-memory STATE cache (which is filled by API.bootstrap()).
+*/
+const DB = {
+  get(key) {
+    if (key === "employers") return STATE.employers;
+    if (key === "employees") return STATE.employees;
+    if (key === "logs") {
+      // Map server log shape -> demo's expected shape
+      return STATE.activityLog.map(l => ({
+        t: l.t, user: l.user, action: l.action, target: l.target || "",
+      }));
+    }
+    return [];
+  },
+  // Deprecated — kept as no-op so any leftover callers don't crash.
+  // All writes now go through the API methods above.
+  set(_key, _val) { /* no-op: API is the source of truth */ },
+  // Test / dev convenience
+  reset() {
+    clearSession();
+    STATE.employers = [];
+    STATE.employees = [];
+    STATE.activityLog = [];
+  },
+};
+
+/* logEvent is now a no-op — the server logs every mutation automatically. */
+function logEvent(_action, _target) { /* server handles activity log */ }
+
+/* ---------- Auth flow ---------- */
+async function requireAuth() {
+  loadTokenFromStorage();
+  if (!STATE.token) { location.href = "login.html"; return null; }
+  try {
+    await API.bootstrap();
+    return STATE.user;
+  } catch {
+    clearSession();
+    location.href = "login.html";
+    return null;
+  }
+}
+
+async function logout() {
+  await API.logout();
+  location.href = "login.html";
+}
+
+/* ---------- UI helpers (unchanged behaviour) ---------- */
 function flash(msg) {
   const el = document.createElement("div");
   el.className = "flash";
@@ -74,24 +282,16 @@ function reveal() {
   els.forEach(el => io.observe(el));
 }
 
-/* ========== Auth (demo) ========== */
-function requireAuth() {
-  const s = JSON.parse(localStorage.getItem(STORE_KEYS.session) || "null");
-  if (!s) { window.location.href = "login.html"; return null; }
-  return s;
-}
-
-function logout() {
-  localStorage.removeItem(STORE_KEYS.session);
-  window.location.href = "login.html";
-}
-
-/* ========== CSV / Print Export ========== */
+/* ---------- CSV export ---------- */
 function exportCSV(rows, filename) {
   if (!rows.length) { flash("Nothing to export"); return; }
   const headers = Object.keys(rows[0]);
   const csv = [headers.join(",")]
-    .concat(rows.map(r => headers.map(h => `"${(r[h] ?? "").toString().replace(/"/g, '""')}"`).join(",")))
+    .concat(rows.map(r => headers.map(h => {
+      const v = r[h];
+      const str = v == null ? "" : (typeof v === "object" ? JSON.stringify(v) : String(v));
+      return `"${str.replace(/"/g, '""')}"`;
+    }).join(",")))
     .join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -100,21 +300,12 @@ function exportCSV(rows, filename) {
   a.click();
   URL.revokeObjectURL(url);
   flash("Exported " + filename);
-  logEvent("exported CSV", filename);
 }
 
-/* ========== Bulk CSV Import ==========
-   Parses an uploaded CSV (via PapaParse loaded from CDN on the page)
-   and inserts records into localStorage with per-row validation.
-   Reuses the same duplicate-phone check as the single-add forms.
-*/
-
-// Schema config for each entity. Used for templates, validation, and inserts.
+/* ---------- Bulk CSV import config + helpers ---------- */
 const BULK_CONFIGS = {
   employers: {
     storeKey: "employers",
-    idPrefix: "EMP-",
-    idStart: 1001,
     entitySingular: "employer",
     entityPlural: "employers",
     columns: [
@@ -137,13 +328,9 @@ const BULK_CONFIGS = {
       town: "Guwahati",
       remark: "Looking for 5 drivers and 2 accountants.",
     },
-    defaults: { status: "active" },
-    nameField: "company",
   },
   employees: {
     storeKey: "employees",
-    idPrefix: "CAN-",
-    idStart: 5001,
     entitySingular: "candidate",
     entityPlural: "candidates",
     columns: [
@@ -168,19 +355,12 @@ const BULK_CONFIGS = {
       remark: "Completed B.Com, 2 yrs exp. Ready for interview.",
       txn: "UPI8239KD019",
     },
-    defaults: { status: "paid" }, // bulk import implies admin has verified offline
-    nameField: "name",
   },
 };
 
-function getBulkConfig(kind) {
-  const cfg = BULK_CONFIGS[kind];
-  if (!cfg) throw new Error("Unknown bulk-import kind: " + kind);
-  return cfg;
-}
-
 function downloadCsvTemplate(kind) {
-  const cfg = getBulkConfig(kind);
+  const cfg = BULK_CONFIGS[kind];
+  if (!cfg) { flash("Unknown template"); return; }
   const headers = cfg.columns.map(c => c.name);
   const example = headers.map(h => cfg.exampleRow[h] ?? "");
   const csv =
@@ -193,14 +373,9 @@ function downloadCsvTemplate(kind) {
   a.download = `mindset-${cfg.entityPlural}-import-template.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  flash(`Template downloaded`);
+  flash("Template downloaded");
 }
 
-/**
- * Parse a File via PapaParse and return a Promise that resolves to
- * { rows, headers } or rejects with an Error. PapaParse must be
- * loaded on the page (via CDN script tag) before this is called.
- */
 function parseCsvFile(file) {
   return new Promise((resolve, reject) => {
     if (typeof Papa === "undefined") {
@@ -223,69 +398,27 @@ function parseCsvFile(file) {
 }
 
 /**
- * Validate a list of rows and insert valid ones into localStorage.
- * Returns { inserted: [...], failed: [{ row: n, data, error }] }.
- * Preserves CSV order — first valid row appears at top of the table.
+ * Submit a parsed CSV batch to the bulk-import endpoint.
+ * Returns { inserted, failed } same shape as the server response.
  */
-function bulkImport(kind, rows) {
-  const cfg = getBulkConfig(kind);
-  const list = DB.get(cfg.storeKey);
-  const inserted = [];
-  const failed = [];
-  // Track phones seen across the existing DB AND earlier rows in this batch
-  // so duplicates within the same upload are caught.
-  const seenPhones = new Set(list.map(r => String(r.phone || "").trim()));
-
-  rows.forEach((row, idx) => {
-    const data = {};
-    for (const col of cfg.columns) {
-      data[col.name] = String(row[col.name] ?? "").trim();
-    }
-    // Required-field check
-    const missing = cfg.columns
-      .filter(c => c.required && !data[c.name])
-      .map(c => c.name);
-    if (missing.length) {
-      failed.push({ row: idx + 1, data, error: `Missing required field${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}.` });
-      return;
-    }
-    // Duplicate phone check (against DB + earlier rows in batch)
-    if (seenPhones.has(data.phone)) {
-      failed.push({ row: idx + 1, data, error: `Duplicate phone (${data.phone}) — already exists.` });
-      return;
-    }
-    seenPhones.add(data.phone);
-
-    const id = cfg.idPrefix + (cfg.idStart + list.length + inserted.length);
-    inserted.push({
-      id,
-      ...data,
-      ...cfg.defaults,
-      createdAt: Date.now(),
-    });
-  });
-
-  if (inserted.length) {
-    // Newest at top — match the single-add UX (which uses unshift)
-    DB.set(cfg.storeKey, [...inserted].reverse().concat(list));
-    logEvent(`bulk imported ${inserted.length} ${cfg.entityPlural}` +
-             (failed.length ? ` (${failed.length} skipped)` : ""), "");
-  }
-  return { inserted, failed };
+async function bulkImport(kind, rows) {
+  if (kind === "employers") return API.employers.bulk(rows);
+  if (kind === "employees") return API.employees.bulk(rows);
+  throw new Error("Unknown bulk-import kind: " + kind);
 }
 
-/* ========== Sidebar renderer ========== */
+/* ---------- Sidebar (unchanged) ---------- */
 function renderSidebar(active) {
-  const session = JSON.parse(localStorage.getItem(STORE_KEYS.session) || "{}");
-  const initial = (session.role === "admin" ? "A" : "P");
-  const roleLabel = session.role === "admin" ? "Administrator" : "Placement Office";
-  const name = session.role === "admin" ? "Raktim M." : "Placement Desk";
+  const role = STATE.user?.role || "po";
+  const initial = role === "admin" ? "A" : "P";
+  const roleLabel = role === "admin" ? "Administrator" : "Placement Office";
+  const name = STATE.user?.name || (role === "admin" ? "Mindset Admin" : "Placement Desk");
 
   return `
     <aside class="sidebar">
       <a href="dashboard.html" class="brand" style="text-decoration:none">
         <span class="dot"></span>Mindset
-        <span class="sub">Pvt. Ltd.</span>
+        <span class="sub">Career</span>
       </a>
 
       <div class="side-group">
@@ -340,7 +473,7 @@ function renderSidebar(active) {
   `;
 }
 
-/* Init store on every page load */
+/* ---------- Boot ---------- */
 (function boot() {
-  if (typeof SEED !== "undefined") DB.init();
+  loadTokenFromStorage();
 })();
