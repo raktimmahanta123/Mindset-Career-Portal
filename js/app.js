@@ -12,8 +12,21 @@
      Set on window before this script loads to override for prod.
    =========================================================== */
 
-const API_BASE = (typeof window !== "undefined" && window.MINDSET_API_BASE)
-  || "http://localhost:4000";
+// Auto-pick the right API base:
+//   1. Explicit override via window.MINDSET_API_BASE wins (set in HTML).
+//   2. Otherwise, if served from a non-localhost domain, use the
+//      hosted Render backend (set this string after the first Render
+//      deploy gives you the actual URL — search "MINDSET_API_BASE_PROD").
+//   3. Default to localhost:4000 for development.
+const MINDSET_API_BASE_PROD = "https://mindset-career-api.onrender.com";
+
+const API_BASE = (() => {
+  if (typeof window === "undefined") return "http://localhost:4000";
+  if (window.MINDSET_API_BASE) return window.MINDSET_API_BASE;
+  const host = window.location.hostname || "";
+  const isLocal = host === "" || host === "localhost" || host.startsWith("127.") || host.endsWith(".local");
+  return isLocal ? "http://localhost:4000" : MINDSET_API_BASE_PROD;
+})();
 
 const TOKEN_KEY = "mindset.token";
 const USER_KEY = "mindset.user";

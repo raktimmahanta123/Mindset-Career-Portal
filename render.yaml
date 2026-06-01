@@ -1,0 +1,41 @@
+# Render.com infrastructure-as-code config for the Mindset Career
+# backend. When the repo is connected to Render, Render reads this
+# file and provisions the service automatically — no manual setup.
+#
+# How to deploy (first time):
+#   1. Sign up / log in at https://render.com (free tier is enough).
+#   2. New → Web Service → connect this GitHub repo
+#      (Mindset-Career-Portal). Render auto-detects render.yaml
+#      and asks to apply it.
+#   3. Click "Apply". Render builds + starts the service in 2-3 min.
+#   4. Note the URL it gives you, e.g.
+#        https://mindset-career-api.onrender.com
+#   5. Set that URL on the frontend (see DEPLOYMENT.md).
+#
+# After the first deploy, every git push to `main` automatically
+# rebuilds and restarts the service. No manual deploys needed.
+
+services:
+  - type: web
+    name: mindset-career-api
+    runtime: node
+    plan: free
+    region: singapore           # closest free-tier region to Guwahati
+    branch: main
+    rootDir: .
+    buildCommand: npm install
+    startCommand: npm run server
+    autoDeploy: true            # rebuild on every push to main
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      # PORT is supplied automatically by Render. Our server reads
+      # process.env.PORT so no config needed.
+
+    disk:
+      # Persistent disk for db.json — without this, the JSON file
+      # gets wiped every time Render redeploys the container.
+      name: mindset-data
+      mountPath: /opt/render/project/src/server/data
+      sizeGB: 1
