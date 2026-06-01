@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Settings — Mindset Career Portal</title>
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    max-width: 720px;
+  }
+  .settings-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 28px 32px;
+  }
+  .settings-card h3 {
+    font-family: var(--f-display);
+    font-size: 22px;
+    margin: 0 0 6px;
+    font-weight: 500;
+  }
+  .settings-card .sub {
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    margin: 0 0 22px;
+    line-height: 1.55;
+  }
+  .settings-card .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .settings-card .field {
+    margin-bottom: 14px;
+  }
+  .settings-card .form-foot {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .temp-pass-card {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .temp-pass-card h3 { color: var(--paper); }
+  .temp-pass-card .sub { color: rgba(244, 239, 230, 0.7); }
+  .temp-display {
+    font-family: var(--f-mono);
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    padding: 14px 18px;
+    background: rgba(244, 239, 230, 0.08);
+    border: 1px solid rgba(244, 239, 230, 0.2);
+    color: var(--sienna-soft);
+    margin: 16px 0;
+    text-align: center;
+  }
+  .role-note {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="portal-shell">
+  <div id="side-root"></div>
+
+  <main class="portal-main">
+    <div class="portal-head">
+      <div>
+        <div class="crumb">Account · § Settings</div>
+        <h1><span class="italic">Account</span> settings.</h1>
+      </div>
+      <div class="actions">
+        <a href="dashboard.html" class="btn btn-ghost">← Back to dashboard</a>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+
+      <!-- ===== Change own password ===== -->
+      <div class="settings-card">
+        <h3>Change <span class="italic" style="color:var(--oxblood)">password</span></h3>
+        <p class="sub">Update the password you use to sign in to this portal. The new password must be at least 8 characters long.</p>
+
+        <form id="pwd-form" onsubmit="event.preventDefault(); changePwd();">
+          <div class="field">
+            <label>Current password ·</label>
+            <input type="password" name="current" required autocomplete="current-password" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>New password ·</label>
+              <input type="password" name="next" required autocomplete="new-password" minlength="8" />
+            </div>
+            <div class="field">
+              <label>Confirm new ·</label>
+              <input type="password" name="confirm" required autocomplete="new-password" minlength="8" />
+            </div>
+          </div>
+          <div class="form-foot">
+            <button type="submit" class="btn btn-oxblood">Update password</button>
+            <span class="role-note">Signed in as <span id="who">—</span></span>
+          </div>
+        </form>
+      </div>
+
+      <!-- ===== Admin: reset another user's password ===== -->
+      <div class="settings-card" id="admin-card" style="display:none">
+        <h3>Reset <span class="italic" style="color:var(--oxblood)">another user's</span> password</h3>
+        <p class="sub">Admin only. Resets the target user's password to a temporary value. Share the temporary password with them via WhatsApp / phone — they should change it immediately after signing in.</p>
+
+        <form id="reset-form" onsubmit="event.preventDefault(); resetPwd();">
+          <div class="field">
+            <label>Username ·</label>
+            <input name="username" placeholder="e.g., po" required />
+          </div>
+          <div class="form-foot">
+            <button type="submit" class="btn btn-oxblood">Generate temporary password</button>
+          </div>
+        </form>
+
+        <div id="temp-display" style="display:none;margin-top:18px">
+          <div class="settings-card temp-pass-card" style="padding:18px 22px">
+            <p class="sub" style="margin:0 0 4px;color:rgba(244,239,230,0.7);font-size:12px;text-transform:uppercase;letter-spacing:0.1em">Temporary password</p>
+            <div class="temp-display" id="temp-value">—</div>
+            <p class="sub" style="margin:0;font-size:12px">Copy this now — it will not be shown again. The user can change it from this same page after logging in.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  async function changePwd() {
+    const f = document.getElementById("pwd-form");
+    const { current, next, confirm } = Object.fromEntries(new FormData(f).entries());
+    if (next !== confirm) { flash("New passwords don't match"); return; }
+    if (next.length < 8) { flash("New password must be at least 8 characters"); return; }
+    try {
+      await API.changePassword(current, next);
+      flash("Password updated");
+      f.reset();
+    } catch (err) {
+      flash(err.message || "Could not change password");
+    }
+  }
+
+  async function resetPwd() {
+    const f = document.getElementById("reset-form");
+    const { username } = Object.fromEntries(new FormData(f).entries());
+    if (!username.trim()) { flash("Enter a username"); return; }
+    try {
+      const r = await API.resetPassword(username.trim());
+      document.getElementById("temp-value").textContent = r.temporaryPassword;
+      document.getElementById("temp-display").style.display = "block";
+      flash("Temporary password generated");
+    } catch (err) {
+      flash(err.message || "Could not reset password");
+    }
+  }
+
+  (async () => {
+    const user = await requireAuth();
+    if (!user) return;
+    document.getElementById("side-root").outerHTML = renderSidebar("settings");
+    document.getElementById("who").textContent = `${user.name} · ${user.role.toUpperCase()}`;
+    // Show admin-only reset card if current user is admin
+    if (user.role === "admin") {
+      document.getElementById("admin-card").style.display = "block";
+    }
+  })();
+</script>
+</body>
+</html>

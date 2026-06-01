@@ -282,6 +282,60 @@ function reveal() {
   els.forEach(el => io.observe(el));
 }
 
+/* ---------- Exports (CSV / Excel / PDF) ----------
+   CSV is built inline. Excel uses SheetJS (loaded via CDN on pages
+   that export). PDF uses jsPDF + autotable (loaded via CDN). */
+
+/**
+ * Normalise a record list for export — strips internal fields and
+ * formats arrays into readable text. Pass the kind ("employers"
+ * or "employees") so we know which columns to include.
+ */
+function rowsForExport(rows, kind) {
+  if (!rows.length) return [];
+  return rows.map((r, i) => {
+    const base = {
+      "S.No.": i + 1,
+      ID: r.id,
+    };
+    if (kind === "employers") {
+      return {
+        ...base,
+        Company: r.company,
+        "Contact Person": r.person,
+        Designation: r.designation || "",
+        Phone: r.phone,
+        State: r.state,
+        District: r.district || "",
+        Town: r.town || "",
+        Remarks: r.remark || "",
+        Status: r.status || "active",
+        "Follow-ups": (r.followUps || []).map(f => `${f.date}: ${f.note}`).join(" | "),
+      };
+    }
+    if (kind === "employees") {
+      return {
+        ...base,
+        Name: r.name,
+        Department: r.dept,
+        Designation: r.designation,
+        Phone: r.phone,
+        State: r.state,
+        District: r.district || "",
+        Town: r.town || "",
+        Remarks: r.remark || "",
+        Status: r.status || "paid",
+        "Transaction ID": r.txn || "",
+        "Amount Paid": r.amountPaid || 0,
+        "Payment Date": r.paymentDate || "",
+        Receipt: r.receiptNumber || "",
+        "Follow-ups": (r.followUps || []).map(f => `${f.date}: ${f.note}`).join(" | "),
+      };
+    }
+    return r;
+  });
+}
+
 /* ---------- CSV export ---------- */
 function exportCSV(rows, filename) {
   if (!rows.length) { flash("Nothing to export"); return; }
@@ -299,6 +353,60 @@ function exportCSV(rows, filename) {
   a.href = url; a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+  flash("Exported " + filename);
+}
+
+/**
+ * Excel export — requires SheetJS / XLSX loaded on the page.
+ * Pages that want Excel export must include the xlsx CDN script.
+ */
+function exportXLSX(rows, kind, filename) {
+  if (typeof XLSX === "undefined") {
+    flash("Excel exporter not loaded — please refresh");
+    return;
+  }
+  const data = rowsForExport(rows, kind);
+  if (!data.length) { flash("Nothing to export"); return; }
+  const sheet = XLSX.utils.json_to_sheet(data);
+  const book = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(book, sheet, kind === "employers" ? "Employers" : "Candidates");
+  XLSX.writeFile(book, filename);
+  flash("Exported " + filename);
+}
+
+/**
+ * PDF export — requires jsPDF + jsPDF AutoTable loaded on the page.
+ * Renders a landscape A4 table with all visible columns. Long
+ * columns (Remarks, Follow-ups) wrap automatically via autotable.
+ */
+function exportPDF(rows, kind, filename, titleLine) {
+  if (typeof window.jspdf === "undefined" && typeof jsPDF === "undefined") {
+    flash("PDF exporter not loaded — please refresh");
+    return;
+  }
+  const data = rowsForExport(rows, kind);
+  if (!data.length) { flash("Nothing to export"); return; }
+  const { jsPDF: JS } = (window.jspdf || { jsPDF: jsPDF });
+  const doc = new JS({ orientation: "landscape", unit: "pt", format: "a4" });
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text(titleLine || (kind === "employers" ? "Mindset Career — Employer Ledger" : "Mindset Career — Candidate Ledger"), 40, 38);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Generated: " + new Date().toLocaleString("en-IN"), 40, 54);
+
+  const headers = Object.keys(data[0]);
+  const body = data.map(r => headers.map(h => String(r[h] ?? "")));
+  doc.autoTable({
+    head: [headers],
+    body,
+    startY: 70,
+    styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+    headStyles: { fillColor: [122, 31, 26], textColor: 244, fontStyle: "bold" }, // oxblood
+    alternateRowStyles: { fillColor: [248, 245, 238] },
+    columnStyles: { 0: { cellWidth: 32 } },
+  });
+  doc.save(filename);
   flash("Exported " + filename);
 }
 
@@ -455,6 +563,16 @@ function renderSidebar(active) {
           <a href="activity.html" class="side-link ${active==='activity'?'active':''}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
             Activity Log
+          </a>
+        </nav>
+      </div>
+
+      <div class="side-group">
+        <h5>Account</h5>
+        <nav class="side-nav">
+          <a href="settings.html" class="side-link ${active==='settings'?'active':''}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            Settings
           </a>
         </nav>
       </div>

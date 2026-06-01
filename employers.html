@@ -18,10 +18,9 @@
         <h1><span class="italic">Employer</span> ledger.</h1>
       </div>
       <div class="actions">
-        <button class="btn btn-ghost" onclick="exportEmp()">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Export .csv
-        </button>
+        <button class="btn btn-ghost" onclick="exportEmp()">Export .csv</button>
+        <button class="btn btn-ghost" onclick="exportEmpXLSX()">Export .xlsx</button>
+        <button class="btn btn-ghost" onclick="exportEmpPDF()">Export .pdf</button>
         <button class="btn btn-ghost" onclick="openBulk()">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
           Bulk import
@@ -162,7 +161,34 @@
   </div>
 </div>
 
+<!-- FOLLOW-UP MODAL -->
+<div class="modal-backdrop" id="followup-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div>
+        <div class="num-tag" id="fu-tag">FOLLOW-UP · § 01</div>
+        <h2><span class="italic">Follow-up</span> on <span id="fu-name">—</span></h2>
+      </div>
+      <button class="btn-icon" onclick="closeFollowupModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="fu-history"></div>
+      <div class="field">
+        <label>New follow-up note ·</label>
+        <textarea id="fu-note" rows="3" placeholder="e.g., Called HR — said they will send JD by Friday."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeFollowupModal()">Cancel</button>
+      <button class="btn btn-oxblood" onclick="saveFollowup()">Add follow-up</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
@@ -195,10 +221,14 @@
         <td>${r.town}</td>
         <td>
           <textarea class="remark" onblur="saveRemark('${r.id}', this.value)">${r.remark || ""}</textarea>
+          <small style="display:block;margin-top:4px;font-family:var(--f-mono);font-size:10px;color:var(--ink-soft);letter-spacing:0.08em;text-transform:uppercase">
+            ${r.followUps?.[0] ? "Last follow-up: " + r.followUps[0].date : "No follow-ups yet"}
+          </small>
         </td>
         <td><span class="tag ${r.status === 'archived' ? 'archived' : 'paid'}">${r.status || 'active'}</span></td>
         <td class="actions-cell">
           <button onclick="openEdit('${r.id}')">Edit</button>
+          <button onclick="openFollowup('${r.id}')">Follow-up</button>
           <button onclick="toggleArchive('${r.id}')">${r.status === 'archived' ? 'Restore' : 'Archive'}</button>
           <button class="del" onclick="delRow('${r.id}')">Delete</button>
         </td>
@@ -286,6 +316,57 @@
   }
 
   function exportEmp() { exportCSV(DB.get("employers"), "mindset-employers.csv"); }
+  function exportEmpXLSX() { exportXLSX(DB.get("employers"), "employers", "mindset-employers.xlsx"); }
+  function exportEmpPDF() { exportPDF(DB.get("employers"), "employers", "mindset-employers.pdf"); }
+
+  /* ===== Follow-up notes ===== */
+  let followupId = null;
+
+  function openFollowup(id) {
+    const r = DB.get("employers").find(x => x.id === id);
+    if (!r) return;
+    followupId = id;
+    document.getElementById("fu-tag").textContent = "FOLLOW-UP · " + id;
+    document.getElementById("fu-name").textContent = r.company;
+    document.getElementById("fu-note").value = "";
+    renderFollowupHistory(r.followUps || []);
+    document.getElementById("followup-modal").classList.add("open");
+  }
+
+  function closeFollowupModal() {
+    document.getElementById("followup-modal").classList.remove("open");
+    followupId = null;
+  }
+
+  function renderFollowupHistory(list) {
+    const el = document.getElementById("fu-history");
+    if (!list.length) {
+      el.innerHTML = '<p style="color:var(--ink-soft);font-size:13px;margin:0 0 14px">No follow-ups recorded yet.</p>';
+      return;
+    }
+    el.innerHTML = '<p style="font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;margin:0 0 8px">History (' + list.length + ')</p>' +
+      '<div style="max-height:220px;overflow:auto;border:1px solid var(--rule);border-radius:6px;padding:8px 12px;margin-bottom:14px">' +
+      list.map(f => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--rule-soft);font-size:13px">
+          <div style="font-family:var(--f-mono);font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em">${f.date}${f.by ? " · " + f.by : ""}</div>
+          <div style="margin-top:3px">${f.note}</div>
+        </div>
+      `).join("") + '</div>';
+  }
+
+  async function saveFollowup() {
+    const note = document.getElementById("fu-note").value.trim();
+    if (!note) { flash("Note cannot be empty"); return; }
+    if (!followupId) return;
+    try {
+      await API.employers.followup(followupId, note);
+      flash("Follow-up added");
+      closeFollowupModal();
+      render();
+    } catch (err) {
+      flash(err.message || "Could not save follow-up");
+    }
+  }
 
   /* ===== Bulk import ===== */
   let bulkRows = [];
