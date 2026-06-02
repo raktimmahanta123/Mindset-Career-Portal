@@ -14,7 +14,7 @@
   <main class="portal-main">
     <div class="portal-head">
       <div>
-        <div class="crumb">Management · § 02 Employees</div>
+        <div class="crumb">Management · Candidates</div>
         <h1><span class="italic">Candidate</span> ledger.</h1>
       </div>
       <div class="actions" id="can-toolbar">
@@ -66,7 +66,7 @@
   <div class="modal">
     <div class="modal-head">
       <div>
-        <div class="num-tag" id="mode-tag">NEW · § 02</div>
+        <div class="num-tag" id="mode-tag">NEW · CANDIDATE</div>
         <h2 id="mode-title"><span class="italic">Add</span> candidate</h2>
       </div>
       <button class="btn-icon" onclick="closeModal()">✕</button>
@@ -129,7 +129,7 @@
   <div class="modal">
     <div class="modal-head">
       <div>
-        <div class="num-tag">BULK · § 02</div>
+        <div class="num-tag">BULK · CANDIDATES</div>
         <h2><span class="italic">Bulk import</span> candidates</h2>
       </div>
       <button class="btn-icon" onclick="closeBulk()">✕</button>
@@ -165,7 +165,7 @@
   <div class="modal" style="max-width:520px">
     <div class="modal-head">
       <div>
-        <div class="num-tag" id="fu-tag">FOLLOW-UP · § 02</div>
+        <div class="num-tag" id="fu-tag">FOLLOW-UP · CANDIDATE</div>
         <h2><span class="italic">Follow-up</span> on <span id="fu-name">—</span></h2>
       </div>
       <button class="btn-icon" onclick="closeFollowupModal()">✕</button>
@@ -238,7 +238,7 @@
 
   function openNew() {
     editingId = null;
-    document.getElementById("mode-tag").textContent = "NEW · § 02";
+    document.getElementById("mode-tag").textContent = "NEW · CANDIDATE";
     document.getElementById("mode-title").innerHTML = '<span class="italic">Add</span> candidate';
     document.getElementById("frm").reset();
     document.getElementById("modal").classList.add("open");
