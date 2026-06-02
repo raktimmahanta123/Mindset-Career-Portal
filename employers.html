@@ -17,15 +17,8 @@
         <div class="crumb">Management · § 01 Employers</div>
         <h1><span class="italic">Employer</span> ledger.</h1>
       </div>
-      <div class="actions">
-        <button class="btn btn-ghost" onclick="exportEmp()">Export .csv</button>
-        <button class="btn btn-ghost" onclick="exportEmpXLSX()">Export .xlsx</button>
-        <button class="btn btn-ghost" onclick="exportEmpPDF()">Export .pdf</button>
-        <button class="btn btn-ghost" onclick="openBulk()">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          Bulk import
-        </button>
-        <button class="btn btn-oxblood" onclick="openNew()">+ Add New</button>
+      <div class="actions" id="emp-toolbar">
+        <!-- buttons get injected by the script below, gated by userCan() -->
       </div>
     </div>
 
@@ -220,17 +213,18 @@
         <td>${r.district}</td>
         <td>${r.town}</td>
         <td>
-          <textarea class="remark" onblur="saveRemark('${r.id}', this.value)">${r.remark || ""}</textarea>
+          <textarea class="remark" ${userCan('notes') ? `onblur="saveRemark('${r.id}', this.value)"` : "readonly"}>${r.remark || ""}</textarea>
           <small style="display:block;margin-top:4px;font-family:var(--f-mono);font-size:10px;color:var(--ink-soft);letter-spacing:0.08em;text-transform:uppercase">
             ${r.followUps?.[0] ? "Last follow-up: " + r.followUps[0].date : "No follow-ups yet"}
           </small>
         </td>
         <td><span class="tag ${r.status === 'archived' ? 'archived' : 'paid'}">${r.status || 'active'}</span></td>
         <td class="actions-cell">
-          <button onclick="openEdit('${r.id}')">Edit</button>
-          <button onclick="openFollowup('${r.id}')">Follow-up</button>
-          <button onclick="toggleArchive('${r.id}')">${r.status === 'archived' ? 'Restore' : 'Archive'}</button>
-          <button class="del" onclick="delRow('${r.id}')">Delete</button>
+          ${userCan('edit')    ? `<button onclick="openEdit('${r.id}')">Edit</button>` : ''}
+          ${userCan('notes')   ? `<button onclick="openFollowup('${r.id}')">Follow-up</button>` : ''}
+          ${userCan('archive') ? `<button onclick="toggleArchive('${r.id}')">${r.status === 'archived' ? 'Restore' : 'Archive'}</button>` : ''}
+          ${userCan('delete')  ? `<button class="del" onclick="delRow('${r.id}')">Delete</button>` : ''}
+          ${!userCan('edit') && !userCan('notes') && !userCan('archive') && !userCan('delete') ? '<span style="color:var(--ink-soft);font-size:11px;font-family:var(--f-mono)">view only</span>' : ''}
         </td>
       </tr>
     `).join("") || `<tr><td colspan="11" style="padding:40px; text-align:center; color:var(--ink-soft);">No records match.</td></tr>`;
@@ -459,10 +453,24 @@
     }
   }
 
+  function renderToolbar() {
+    const parts = [
+      '<button class="btn btn-ghost" onclick="exportEmp()">Export .csv</button>',
+      '<button class="btn btn-ghost" onclick="exportEmpXLSX()">Export .xlsx</button>',
+      '<button class="btn btn-ghost" onclick="exportEmpPDF()">Export .pdf</button>',
+    ];
+    if (userCan("create")) {
+      parts.push('<button class="btn btn-ghost" onclick="openBulk()">Bulk import</button>');
+      parts.push('<button class="btn btn-oxblood" onclick="openNew()">+ Add New</button>');
+    }
+    document.getElementById("emp-toolbar").innerHTML = parts.join("");
+  }
+
   (async () => {
     const user = await requireAuth();
     if (!user) return;
     document.getElementById("side-root").outerHTML = renderSidebar("employers");
+    renderToolbar();
 
     // Populate states (from window.SEED, still loaded via js/data.js for dropdown enums)
     document.getElementById("stateSel").innerHTML = (typeof SEED !== "undefined" ? SEED.STATES : []).map(s => `<option>${s}</option>`).join("");

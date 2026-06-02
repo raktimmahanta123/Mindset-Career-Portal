@@ -240,6 +240,29 @@ const DB = {
 /* logEvent is now a no-op — the server logs every mutation automatically. */
 function logEvent(_action, _target) { /* server handles activity log */ }
 
+/* ---------- Role-based UI gating ----------
+   Mirrors the server's ROLE_PERMS map. The server enforces these
+   for real; this helper is for hiding/disabling buttons so users
+   don't see actions they can't perform. */
+const ROLE_UI_PERMS = {
+  admin:        { view: true, create: true, edit: true,  notes: true,  archive: true,  delete: true,  resetPasswords: true },
+  admin_viewer: { view: true, create: false, edit: false, notes: false, archive: false, delete: false, resetPasswords: false },
+  po:           { view: true, create: true, edit: false, notes: true,  archive: false, delete: false, resetPasswords: false },
+};
+
+function userCan(perm) {
+  const role = STATE.user?.role || "po";
+  return !!(ROLE_UI_PERMS[role] || {})[perm];
+}
+
+function roleLabel(role) {
+  return {
+    admin: "Administrator",
+    admin_viewer: "Administrator (view-only)",
+    po: "Placement Officer",
+  }[role] || role;
+}
+
 /* ---------- Auth flow ---------- */
 async function requireAuth() {
   loadTokenFromStorage();
@@ -531,9 +554,9 @@ async function bulkImport(kind, rows) {
 /* ---------- Sidebar (unchanged) ---------- */
 function renderSidebar(active) {
   const role = STATE.user?.role || "po";
-  const initial = role === "admin" ? "A" : "P";
-  const roleLabel = role === "admin" ? "Administrator" : "Placement Office";
-  const name = STATE.user?.name || (role === "admin" ? "Mindset Admin" : "Placement Desk");
+  const name = STATE.user?.name || "—";
+  const initial = (name[0] || "?").toUpperCase();
+  const label = roleLabel(role);
 
   return `
     <aside class="sidebar">
@@ -593,7 +616,7 @@ function renderSidebar(active) {
         <div class="avatar">${initial}</div>
         <div class="meta">
           <div class="n">${name}</div>
-          <div class="r">${roleLabel}</div>
+          <div class="r">${label}</div>
         </div>
         <button class="btn-icon" onclick="logout()" title="Log out" style="margin-left:auto;border-color:rgba(244,239,230,0.2)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="14" height="14"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>

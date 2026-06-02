@@ -57,9 +57,32 @@ const SEED_EMPLOYEES = [
   { name: "Bhargav Jyoti Das", dept: "Hospitality", designation: "Front Desk Executive", phone: "+91 94350 71106", state: "Assam", district: "Golaghat", town: "Kaziranga", remark: "Hotel management diploma.", txn: "UPI12KK9910", amountPaid: 300, paymentDate: "2026-05-04" },
 ];
 
+// Five seed users per Client's spec on 2 Jun 2026.
+// Three roles:
+//   admin         — full access
+//   admin_viewer  — read-only across the portal (no mutations at all)
+//   po            — placement officer; can create records + add notes /
+//                   follow-ups, cannot edit existing records, cannot
+//                   archive, cannot delete. (Tightened from the pilot
+//                   spec at Client's request on 2 Jun.)
+//
+// Every user lands on the same default password and is expected to
+// change it on first login via Settings.
+const DEFAULT_PASSWORD = "mindset2026";
 const SEED_USERS = {
-  admin: { username: "admin", password: "mindset2025", role: "admin", name: "Mindset Admin" },
-  po:    { username: "po",    password: "mindset2025", role: "po",    name: "Placement Officer" },
+  atikur: { username: "atikur", password: DEFAULT_PASSWORD, role: "admin",        name: "Atikur" },
+  ravi:   { username: "ravi",   password: DEFAULT_PASSWORD, role: "admin_viewer", name: "Ravi" },
+  po1:    { username: "po1",    password: DEFAULT_PASSWORD, role: "po",           name: "Placement Officer 1" },
+  po2:    { username: "po2",    password: DEFAULT_PASSWORD, role: "po",           name: "Placement Officer 2" },
+  po3:    { username: "po3",    password: DEFAULT_PASSWORD, role: "po",           name: "Placement Officer 3" },
+};
+
+// Role -> action capabilities. Used by requirePerm() middleware.
+// Action names map 1:1 to what the frontend's userCan() also checks.
+const ROLE_PERMS = {
+  admin:        { view: true, create: true, edit: true,  notes: true,  archive: true,  delete: true,  resetPasswords: true },
+  admin_viewer: { view: true, create: false, edit: false, notes: false, archive: false, delete: false, resetPasswords: false },
+  po:           { view: true, create: true, edit: false, notes: true,  archive: false, delete: false, resetPasswords: false },
 };
 
 /* ---------- Helpers ---------- */
@@ -223,6 +246,16 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
+const requirePerm = (perm) => (req, res, next) => {
+  const perms = ROLE_PERMS[req.user.role] || {};
+  if (!perms[perm]) {
+    return res.status(403).json({
+      message: `Your role (${req.user.role}) does not have permission to ${perm}.`,
+    });
+  }
+  next();
+};
+
 /* ---------- App ---------- */
 const app = express();
 
@@ -276,7 +309,7 @@ app.post("/api/auth/change-password", authGuard, (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/auth/reset-password", authGuard, adminOnly, (req, res) => {
+app.post("/api/auth/reset-password", authGuard, requirePerm("resetPasswords"), (req, res) => {
   const username = String(req.body?.username || "").trim();
   const key = Object.keys(req.db.users).find((k) => req.db.users[k].username === username);
   if (!key) return res.status(404).json({ message: "User not found." });
@@ -311,7 +344,7 @@ app.get("/api/employers", authGuard, (req, res) => {
   res.json(rows);
 });
 
-app.post("/api/employers", authGuard, (req, res) => {
+app.post("/api/employers", authGuard, requirePerm("create"), (req, res) => {
   const result = buildEmployerRecord(req.body || {}, req.db.employers);
   if (!result.ok) return res.status(400).json({ message: result.error });
   req.db.employers.unshift(result.record);
@@ -320,7 +353,7 @@ app.post("/api/employers", authGuard, (req, res) => {
   res.status(201).json(result.record);
 });
 
-app.post("/api/employers/bulk", authGuard, (req, res) => {
+app.post("/api/employers/bulk", authGuard, requirePerm("create"), (req, res) => {
   const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
   if (!rows.length) return res.status(400).json({ message: "No rows provided." });
   if (rows.length > 500) return res.status(400).json({ message: "Maximum 500 rows per import." });
@@ -341,7 +374,7 @@ app.post("/api/employers/bulk", authGuard, (req, res) => {
   res.status(inserted.length ? 201 : 400).json({ inserted, failed });
 });
 
-app.put("/api/employers/:id", authGuard, (req, res) => {
+app.put("/api/employers/:id", authGuard, requirePerm("edit"), (req, res) => {
   const { id } = req.params;
   const idx = req.db.employers.findIndex((x) => x.id === id);
   if (idx === -1) return res.status(404).json({ message: "Employer not found." });
@@ -360,7 +393,7 @@ app.put("/api/employers/:id", authGuard, (req, res) => {
   res.json(req.db.employers[idx]);
 });
 
-app.patch("/api/employers/:id/remark", authGuard, (req, res) => {
+app.patch("/api/employers/:id/remark", authGuard, requirePerm("notes"), (req, res) => {
   const idx = req.db.employers.findIndex((x) => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ message: "Employer not found." });
   req.db.employers[idx].remark = String(req.body?.remark || "");
@@ -369,7 +402,7 @@ app.patch("/api/employers/:id/remark", authGuard, (req, res) => {
   res.json(req.db.employers[idx]);
 });
 
-app.post("/api/employers/:id/followups", authGuard, (req, res) => {
+app.post("/api/employers/:id/followups", authGuard, requirePerm("notes"), (req, res) => {
   const note = String(req.body?.note || "").trim();
   if (!note) return res.status(400).json({ message: "Follow-up note is required." });
   const idx = req.db.employers.findIndex((x) => x.id === req.params.id);
@@ -383,7 +416,7 @@ app.post("/api/employers/:id/followups", authGuard, (req, res) => {
   res.json(req.db.employers[idx]);
 });
 
-app.patch("/api/employers/:id/archive", authGuard, adminOnly, (req, res) => {
+app.patch("/api/employers/:id/archive", authGuard, requirePerm("archive"), (req, res) => {
   const idx = req.db.employers.findIndex((x) => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ message: "Employer not found." });
   const current = req.db.employers[idx].status;
@@ -395,7 +428,7 @@ app.patch("/api/employers/:id/archive", authGuard, adminOnly, (req, res) => {
   res.json(req.db.employers[idx]);
 });
 
-app.delete("/api/employers/:id", authGuard, adminOnly, (req, res) => {
+app.delete("/api/employers/:id", authGuard, requirePerm("delete"), (req, res) => {
   const before = req.db.employers.length;
   const record = req.db.employers.find((x) => x.id === req.params.id);
   req.db.employers = req.db.employers.filter((x) => x.id !== req.params.id);
@@ -419,7 +452,7 @@ app.get("/api/employees", authGuard, (req, res) => {
   res.json(rows);
 });
 
-app.post("/api/employees", authGuard, (req, res) => {
+app.post("/api/employees", authGuard, requirePerm("create"), (req, res) => {
   const result = buildEmployeeRecord(req.body || {}, req.db.employees);
   if (!result.ok) return res.status(400).json({ message: result.error });
   req.db.employees.unshift(result.record);
@@ -428,7 +461,7 @@ app.post("/api/employees", authGuard, (req, res) => {
   res.status(201).json(result.record);
 });
 
-app.post("/api/employees/bulk", authGuard, (req, res) => {
+app.post("/api/employees/bulk", authGuard, requirePerm("create"), (req, res) => {
   const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
   if (!rows.length) return res.status(400).json({ message: "No rows provided." });
   if (rows.length > 500) return res.status(400).json({ message: "Maximum 500 rows per import." });
@@ -449,7 +482,7 @@ app.post("/api/employees/bulk", authGuard, (req, res) => {
   res.status(inserted.length ? 201 : 400).json({ inserted, failed });
 });
 
-app.put("/api/employees/:id", authGuard, (req, res) => {
+app.put("/api/employees/:id", authGuard, requirePerm("edit"), (req, res) => {
   const { id } = req.params;
   const idx = req.db.employees.findIndex((x) => x.id === id);
   if (idx === -1) return res.status(404).json({ message: "Candidate not found." });
@@ -468,7 +501,7 @@ app.put("/api/employees/:id", authGuard, (req, res) => {
   res.json(req.db.employees[idx]);
 });
 
-app.patch("/api/employees/:id/remark", authGuard, (req, res) => {
+app.patch("/api/employees/:id/remark", authGuard, requirePerm("notes"), (req, res) => {
   const idx = req.db.employees.findIndex((x) => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ message: "Candidate not found." });
   req.db.employees[idx].remark = String(req.body?.remark || "");
@@ -477,7 +510,7 @@ app.patch("/api/employees/:id/remark", authGuard, (req, res) => {
   res.json(req.db.employees[idx]);
 });
 
-app.post("/api/employees/:id/followups", authGuard, (req, res) => {
+app.post("/api/employees/:id/followups", authGuard, requirePerm("notes"), (req, res) => {
   const note = String(req.body?.note || "").trim();
   if (!note) return res.status(400).json({ message: "Follow-up note is required." });
   const idx = req.db.employees.findIndex((x) => x.id === req.params.id);
@@ -491,7 +524,7 @@ app.post("/api/employees/:id/followups", authGuard, (req, res) => {
   res.json(req.db.employees[idx]);
 });
 
-app.patch("/api/employees/:id/archive", authGuard, adminOnly, (req, res) => {
+app.patch("/api/employees/:id/archive", authGuard, requirePerm("archive"), (req, res) => {
   const idx = req.db.employees.findIndex((x) => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ message: "Candidate not found." });
   const current = req.db.employees[idx].status;
@@ -503,7 +536,7 @@ app.patch("/api/employees/:id/archive", authGuard, adminOnly, (req, res) => {
   res.json(req.db.employees[idx]);
 });
 
-app.delete("/api/employees/:id", authGuard, adminOnly, (req, res) => {
+app.delete("/api/employees/:id", authGuard, requirePerm("delete"), (req, res) => {
   const before = req.db.employees.length;
   const record = req.db.employees.find((x) => x.id === req.params.id);
   req.db.employees = req.db.employees.filter((x) => x.id !== req.params.id);

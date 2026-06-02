@@ -17,10 +17,8 @@
         <div class="crumb">Portal · Overview</div>
         <h1>Good <span class="italic" id="tod">morning</span>,<br/>here's the room.</h1>
       </div>
-      <div class="actions">
-        <a href="register.html" class="btn btn-oxblood">
-          + New Registration
-        </a>
+      <div class="actions" id="head-actions">
+        <!-- injected below — only shown for users who can create -->
       </div>
     </div>
 
@@ -157,6 +155,10 @@
     const user = await requireAuth();
     if (!user) return; // requireAuth already redirected
     document.getElementById("side-root").outerHTML = renderSidebar("dashboard");
+    if (userCan("create")) {
+      document.getElementById("head-actions").innerHTML =
+        '<a href="register.html" class="btn btn-oxblood">+ New Registration</a>';
+    }
     render();
   })();
 </script>

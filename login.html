@@ -41,19 +41,14 @@
       <h2>Welcome <em>back.</em></h2>
       <p class="sub">Sign in with your assigned role. Sessions last 12 hours.</p>
 
-      <div class="role-toggle" id="roleToggle">
-        <button class="active" data-role="admin">Administrator</button>
-        <button data-role="po">Placement Office</button>
-      </div>
-
       <form onsubmit="event.preventDefault(); doLogin();">
         <div class="field">
           <label>Username ·</label>
-          <input id="u" required value="admin" />
+          <input id="u" required autocomplete="username" placeholder="e.g., atikur" />
         </div>
         <div class="field">
           <label>Password ·</label>
-          <input id="p" type="password" required value="mindset2025" />
+          <input id="p" type="password" required autocomplete="current-password" />
         </div>
 
         <button type="submit" class="btn btn-oxblood" style="width:100%; justify-content:center; margin-top:20px">
@@ -61,8 +56,7 @@
         </button>
 
         <div class="hint">
-          Demo credentials · pre-filled<br/>
-          admin / mindset2025 &nbsp;·&nbsp; po / mindset2025
+          First-time users: default password is <code style="font-family:var(--f-mono);font-size:11px;background:rgba(0,63,161,0.08);padding:2px 6px;border-radius:3px">mindset2026</code> — change it on the Settings page after signing in.
         </div>
       </form>
 
@@ -76,16 +70,6 @@
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
-  let role = "admin";
-  document.querySelectorAll("#roleToggle button").forEach(b => {
-    b.addEventListener("click", () => {
-      document.querySelectorAll("#roleToggle button").forEach(x => x.classList.remove("active"));
-      b.classList.add("active");
-      role = b.dataset.role;
-      document.getElementById("u").value = role === "admin" ? "admin" : "po";
-    });
-  });
-
   async function doLogin() {
     const u = document.getElementById("u").value.trim();
     const p = document.getElementById("p").value.trim();

@@ -179,9 +179,9 @@
     const user = await requireAuth();
     if (!user) return;
     document.getElementById("side-root").outerHTML = renderSidebar("settings");
-    document.getElementById("who").textContent = `${user.name} · ${user.role.toUpperCase()}`;
-    // Show admin-only reset card if current user is admin
-    if (user.role === "admin") {
+    document.getElementById("who").textContent = `${user.name} · ${roleLabel(user.role)}`;
+    // Show admin-only reset card only if current user has permission
+    if (userCan("resetPasswords")) {
       document.getElementById("admin-card").style.display = "block";
     }
   })();
