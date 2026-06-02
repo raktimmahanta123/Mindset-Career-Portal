@@ -1,0 +1,16 @@
+# Vercel hosts only the static frontend.
+# The Express backend lives on Render — don't ship it here.
+server/
+node_modules/
+package.json
+package-lock.json
+render.yaml
+DEPLOYMENT.md
+README.md
+.git/
+.netlify/
+build_pdf.py
+Reframe-Studios-Reference-Sheet.pdf
+proposal/
+# The original 2 MB logo (web-optimised version is at assets/logo.png)
+assets/mindset-career-logo.png
