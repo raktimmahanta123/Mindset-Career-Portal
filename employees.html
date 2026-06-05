@@ -468,7 +468,11 @@
     ];
     if (userCan("create")) {
       parts.push('<button class="btn btn-ghost" onclick="openBulk()">Bulk import</button>');
-      parts.push('<button class="btn btn-ghost" onclick="openNew()">+ Add New</button>');
+      // Both "add" actions are primary — use the oxblood (filled blue) style
+      // so there isn't a single solid-blue button stranded at the end of a
+      // row of ghost buttons. Visual grouping: utility actions (ghost) on
+      // the left, add actions (filled) on the right.
+      parts.push('<button class="btn btn-oxblood" onclick="openNew()">+ Add New</button>');
       parts.push('<a href="register.html" class="btn btn-oxblood">+ New Registration (₹300)</a>');
     }
     document.getElementById("can-toolbar").innerHTML = parts.join("");
