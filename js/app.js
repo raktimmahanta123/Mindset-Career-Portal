@@ -18,7 +18,7 @@
 //      hosted Render backend (set this string after the first Render
 //      deploy gives you the actual URL — search "MINDSET_API_BASE_PROD").
 //   3. Default to localhost:4000 for development.
-const MINDSET_API_BASE_PROD = "https://mindset-career-api.onrender.com";
+const MINDSET_API_BASE_PROD = "https://mindsetcareer-api.onrender.com";
 
 const API_BASE = (() => {
   if (typeof window === "undefined") return "http://localhost:4000";
