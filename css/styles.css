@@ -177,14 +177,13 @@ h1, h2, h3, h4 {
 
 .nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
-  gap: 14px;
-  /* Pill back to the v=b dimensions Atikur preferred. Right padding still
-     slightly larger than left to compensate for the arrow's right bearing. */
-  padding: 18px 42px 18px 34px;
+  gap: 22px;
+  /* Pill grown around the smaller (12pt) label so the breathing room is
+     visible. Right padding still asymmetric to compensate for arrow bearing. */
+  padding: 26px 68px 26px 56px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
-  /* Smaller label + arrow so the same-sized pill has more visible
-     breathing room around the content. */
+  /* Label + arrow kept at the previous smaller size — the pill grew, not them. */
   font-size: 12px; font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 1;
