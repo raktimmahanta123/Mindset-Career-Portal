@@ -177,15 +177,15 @@ h1, h2, h3, h4 {
 
 .nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
-  gap: 16px;
-  /* Right padding intentionally larger than left: the arrow glyph
-     has minimal right-side bearing, so symmetric padding makes it
-     visually hug the edge. The 8px asymmetry restores optical balance. */
-  padding: 18px 42px 18px 34px;
+  gap: 24px;
+  /* Generous padding both sides. Right is slightly larger than left to
+     optically compensate for the arrow glyph's near-zero right bearing —
+     keeps the "P" and the arrow looking equally inset from their edges. */
+  padding: 24px 72px 24px 60px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
-  font-size: 15px; font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: 16px; font-weight: 600;
+  letter-spacing: 0.02em;
   line-height: 1;
   transition: background 0.2s;
 }
