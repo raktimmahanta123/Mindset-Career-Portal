@@ -177,11 +177,12 @@ h1, h2, h3, h4 {
 
 .nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
-  gap: 12px;
-  padding: 14px 28px;
+  gap: 14px;
+  padding: 17px 34px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
-  font-size: 14px; font-weight: 600;
+  font-size: 15px; font-weight: 600;
+  letter-spacing: 0.01em;
   line-height: 1;
   transition: background 0.2s;
 }
