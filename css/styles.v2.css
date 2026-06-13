@@ -181,7 +181,7 @@ h1, h2, h3, h4 {
   justify-content: center;
   /* Symmetric padding — "Portal Login" sits centred with visible breathing
      room on all sides, sized like a normal nav CTA, not a hero button. */
-  padding: 20px 48px;
+  padding: 26px 72px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
   font-size: 12px; font-weight: 600;
