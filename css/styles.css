@@ -176,11 +176,13 @@ h1, h2, h3, h4 {
 .nav a:hover::after, .nav a.active::after { right: 0; }
 
 .nav-cta {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 11px 24px 11px 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 12px;
+  padding: 14px 28px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
-  font-size: 13px; font-weight: 600;
+  font-size: 14px; font-weight: 600;
+  line-height: 1;
   transition: background 0.2s;
 }
 .nav-cta:hover { background: var(--oxblood); }
