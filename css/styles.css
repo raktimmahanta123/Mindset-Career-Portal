@@ -177,8 +177,11 @@ h1, h2, h3, h4 {
 
 .nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
-  gap: 14px;
-  padding: 17px 34px;
+  gap: 16px;
+  /* Right padding intentionally larger than left: the arrow glyph
+     has minimal right-side bearing, so symmetric padding makes it
+     visually hug the edge. The 8px asymmetry restores optical balance. */
+  padding: 18px 42px 18px 34px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
   font-size: 15px; font-weight: 600;
