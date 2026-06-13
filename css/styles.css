@@ -177,17 +177,22 @@ h1, h2, h3, h4 {
 
 .nav-cta {
   display: inline-flex; align-items: center; justify-content: center;
-  gap: 24px;
-  /* Generous padding both sides. Right is slightly larger than left to
-     optically compensate for the arrow glyph's near-zero right bearing —
-     keeps the "P" and the arrow looking equally inset from their edges. */
-  padding: 24px 72px 24px 60px;
+  gap: 14px;
+  /* Pill back to the v=b dimensions Atikur preferred. Right padding still
+     slightly larger than left to compensate for the arrow's right bearing. */
+  padding: 18px 42px 18px 34px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
-  font-size: 16px; font-weight: 600;
-  letter-spacing: 0.02em;
+  /* Smaller label + arrow so the same-sized pill has more visible
+     breathing room around the content. */
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.04em;
   line-height: 1;
   transition: background 0.2s;
+}
+.nav-cta .arrow {
+  font-size: 13px;        /* arrow drawn one pt larger than label so it doesn't shrink to nothing */
+  display: inline-block;
 }
 .nav-cta:hover { background: var(--oxblood); }
 .nav-cta .arrow { transition: transform 0.3s; }
