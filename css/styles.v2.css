@@ -176,12 +176,12 @@ h1, h2, h3, h4 {
 .nav a:hover::after, .nav a.active::after { right: 0; }
 
 .nav-cta {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  /* Generous padding so "Portal Login" floats well clear of every edge.
-     !important is defensive — guarantees nothing later can override. */
-  padding: 36px 96px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Symmetric padding — "Portal Login" sits centred with visible breathing
+     room on all sides, sized like a normal nav CTA, not a hero button. */
+  padding: 20px 48px;
   background: var(--ink); color: var(--paper);
   border-radius: 999px;
   font-size: 12px; font-weight: 600;
