@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Employers — Mindset Career Portal</title>
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
 </head>
 <body>
 
@@ -26,7 +26,7 @@
       <div class="left">
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input id="q" placeholder="Search company, person, town, district…" />
+          <input id="q" maxlength="60" placeholder="Search company, person, town, district…" />
         </div>
         <span class="chip active" data-filter="all">All</span>
         <span class="chip" data-filter="active">Active</span>
@@ -49,9 +49,9 @@
             <th>State</th>
             <th>District</th>
             <th>Town</th>
-            <th style="min-width:240px">Remarks</th>
+            <th style="min-width:240px; text-align:center">Remarks</th>
             <th style="width:120px">Status</th>
-            <th style="width:130px"></th>
+            <th style="width:150px"></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -74,22 +74,22 @@
       <form id="frm" onsubmit="event.preventDefault(); saveEmp();">
         <div class="field">
           <label>Company / Organisation Name ·</label>
-          <input name="company" required />
+          <input name="company" required maxlength="100" />
         </div>
         <div class="field-row">
           <div class="field">
             <label>Contact Person ·</label>
-            <input name="person" required />
+            <input name="person" required maxlength="80" />
           </div>
           <div class="field">
             <label>Designation</label>
-            <input name="designation" />
+            <input name="designation" maxlength="60" />
           </div>
         </div>
         <div class="field-row">
           <div class="field">
             <label>Contact Number ·</label>
-            <input name="phone" required placeholder="+91 ..." />
+            <input name="phone" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" />
           </div>
           <div class="field">
             <label>State ·</label>
@@ -99,16 +99,16 @@
         <div class="field-row">
           <div class="field">
             <label>District</label>
-            <input name="district" />
+            <input name="district" maxlength="50" />
           </div>
           <div class="field">
             <label>Town</label>
-            <input name="town" />
+            <input name="town" maxlength="50" />
           </div>
         </div>
         <div class="field">
           <label>Remarks</label>
-          <textarea name="remark" placeholder="Notes, follow-up, open vacancies…"></textarea>
+          <textarea name="remark" maxlength="500" placeholder="Notes, follow-up, open vacancies…"></textarea>
         </div>
       </form>
     </div>
@@ -168,7 +168,7 @@
       <div id="fu-history"></div>
       <div class="field">
         <label>New follow-up note ·</label>
-        <textarea id="fu-note" rows="3" placeholder="e.g., Called HR — said they will send JD by Friday."></textarea>
+        <textarea id="fu-note" rows="3" maxlength="500" placeholder="e.g., Called HR — said they will send JD by Friday."></textarea>
       </div>
     </div>
     <div class="modal-foot">
@@ -197,10 +197,12 @@
       return (r.company + r.person + r.designation + r.phone + r.state + r.district + r.town + r.remark)
         .toLowerCase().includes(query);
     });
+    // Pinned records float to the top (stable sort keeps original order within each group).
+    rows = rows.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
     document.getElementById("count-note").textContent = `Showing ${rows.length} of ${all.length}`;
 
     document.getElementById("tbody").innerHTML = rows.map((r, i) => `
-      <tr data-id="${r.id}">
+      <tr data-id="${r.id}" class="${r.pinned ? 'row-pinned' : ''}">
         <td class="sn">${String(i + 1).padStart(2, "0")}</td>
         <td>
           <div class="strong">${r.company}</div>
@@ -220,6 +222,7 @@
         </td>
         <td><span class="tag ${r.status === 'archived' ? 'archived' : 'paid'}">${r.status || 'active'}</span></td>
         <td class="actions-cell">
+          ${userCan('notes')   ? `<button class="pin-btn ${r.pinned ? 'pinned' : ''}" onclick="togglePin('${r.id}')" title="${r.pinned ? 'Unpin' : 'Pin to top'}">${r.pinned ? '★' : '☆'}</button>` : (r.pinned ? '<span class="pin-static" title="Pinned">★</span>' : '')}
           ${userCan('edit')    ? `<button onclick="openEdit('${r.id}')">Edit</button>` : ''}
           ${userCan('notes')   ? `<button onclick="openFollowup('${r.id}')">Follow-up</button>` : ''}
           ${userCan('archive') ? `<button onclick="toggleArchive('${r.id}')">${r.status === 'archived' ? 'Restore' : 'Archive'}</button>` : ''}
@@ -285,6 +288,16 @@
     } catch (err) {
       flash(err.message || "Could not save remark");
       render(); // restore previous value visually
+    }
+  }
+
+  async function togglePin(id) {
+    try {
+      const r = await API.employers.pin(id);
+      flash(r.pinned ? "Pinned to top" : "Unpinned");
+      render();
+    } catch (err) {
+      flash(err.message || "Could not pin record");
     }
   }
 

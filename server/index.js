@@ -170,6 +170,7 @@ const buildEmployerRecord = (payload, existing) => {
       town: String(payload.town || "").trim(),
       remark: String(payload.remark || "").trim(),
       status: "active",
+      pinned: false,
       followUps: [],
       createdAt: Date.now(),
     },
@@ -209,6 +210,7 @@ const buildEmployeeRecord = (payload, existing) => {
       town: String(payload.town || "").trim(),
       remark: String(payload.remark || "").trim(),
       status: String(payload.status || "paid").trim(),
+      pinned: false,
       txn: String(payload.txn || "").trim(),
       amountPaid: Number.isFinite(amountPaid) && amountPaid > 0 ? amountPaid : 300,
       paymentDate: String(payload.paymentDate || "").trim() || new Date().toISOString().split("T")[0],
@@ -326,7 +328,9 @@ app.get("/api/bootstrap", authGuard, (req, res) => {
     user: sanitizeUser(req.user),
     employers: req.db.employers,
     employees: req.db.employees,
-    activityLog: req.db.activityLog || [],
+    // Activity log is admin-only. Placement officers / view-only users
+    // never receive it (Client request, 15 Jun 2026).
+    activityLog: req.user.role === "admin" ? (req.db.activityLog || []) : [],
   });
 });
 
@@ -398,6 +402,17 @@ app.patch("/api/employers/:id/remark", authGuard, requirePerm("notes"), (req, re
   if (idx === -1) return res.status(404).json({ message: "Employer not found." });
   req.db.employers[idx].remark = String(req.body?.remark || "");
   addLog(req.db, req.user.name, "Updated remark on", req.db.employers[idx].company);
+  writeDb(req.db);
+  res.json(req.db.employers[idx]);
+});
+
+app.patch("/api/employers/:id/pin", authGuard, requirePerm("notes"), (req, res) => {
+  const idx = req.db.employers.findIndex((x) => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ message: "Employer not found." });
+  req.db.employers[idx].pinned = !req.db.employers[idx].pinned;
+  addLog(req.db, req.user.name,
+    req.db.employers[idx].pinned ? "Pinned employer" : "Unpinned employer",
+    req.db.employers[idx].company);
   writeDb(req.db);
   res.json(req.db.employers[idx]);
 });
@@ -506,6 +521,17 @@ app.patch("/api/employees/:id/remark", authGuard, requirePerm("notes"), (req, re
   if (idx === -1) return res.status(404).json({ message: "Candidate not found." });
   req.db.employees[idx].remark = String(req.body?.remark || "");
   addLog(req.db, req.user.name, "Updated remark on", req.db.employees[idx].name);
+  writeDb(req.db);
+  res.json(req.db.employees[idx]);
+});
+
+app.patch("/api/employees/:id/pin", authGuard, requirePerm("notes"), (req, res) => {
+  const idx = req.db.employees.findIndex((x) => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ message: "Candidate not found." });
+  req.db.employees[idx].pinned = !req.db.employees[idx].pinned;
+  addLog(req.db, req.user.name,
+    req.db.employees[idx].pinned ? "Pinned candidate" : "Unpinned candidate",
+    req.db.employees[idx].name);
   writeDb(req.db);
   res.json(req.db.employees[idx]);
 });

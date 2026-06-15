@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Activity Log — Mindset Career Portal</title>
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
 <style>
   .log-grid {
     background: var(--paper);
@@ -60,7 +60,7 @@
       <div class="left">
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input id="q" placeholder="Filter by user, action or target…" />
+          <input id="q" maxlength="60" placeholder="Filter by user, action or target…" />
         </div>
       </div>
       <div class="right">
@@ -106,6 +106,8 @@
   (async () => {
     const user = await requireAuth();
     if (!user) return;
+    // Activity log is admin-only. Bounce everyone else to the dashboard.
+    if (user.role !== "admin") { location.href = "dashboard.html"; return; }
     document.getElementById("side-root").outerHTML = renderSidebar("activity");
     document.getElementById("q").addEventListener("input", e => { query = e.target.value.toLowerCase(); render(); });
     render();

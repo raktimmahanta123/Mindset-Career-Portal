@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mindset Career — Careers, Considered · Guwahati</title>
 <meta name="description" content="Mindset Career is a Guwahati-based job consultancy matching the right people with the right work across the North-East." />
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
 </head>
 <body>
 
@@ -208,16 +208,16 @@
             <div class="field-row">
               <div class="field">
                 <label>Your name ·</label>
-                <input required name="name" placeholder="e.g. Anjalika Sonowal" />
+                <input required name="name" maxlength="80" placeholder="e.g. Anjalika Sonowal" />
               </div>
               <div class="field">
                 <label>Contact ·</label>
-                <input required name="phone" placeholder="+91 ..." />
+                <input required name="phone" maxlength="15" inputmode="numeric" placeholder="10-digit mobile" oninput="this.value=this.value.replace(/\D/g,'').slice(0,15)" />
               </div>
             </div>
             <div class="field">
               <label>Email</label>
-              <input type="email" name="email" placeholder="you@example.com" />
+              <input type="email" name="email" maxlength="100" placeholder="you@example.com" />
             </div>
             <div class="field">
               <label>I am a ·</label>
@@ -230,7 +230,7 @@
             </div>
             <div class="field">
               <label>Message ·</label>
-              <textarea required name="msg" placeholder="Tell us briefly what you are looking for…"></textarea>
+              <textarea required name="msg" maxlength="1000" placeholder="Tell us briefly what you are looking for…"></textarea>
             </div>
             <button type="submit" class="btn btn-oxblood" style="width:100%; justify-content:center; margin-top:10px">
               Send enquiry →

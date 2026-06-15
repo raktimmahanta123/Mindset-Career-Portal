@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>New Registration — Mindset Career Portal</title>
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
 <style>
   @media print {
     body { background: #fff !important; }
@@ -92,7 +92,7 @@
         <form id="regForm" onsubmit="event.preventDefault(); confirmReg();">
           <div class="field">
             <label>Candidate Name ·</label>
-            <input name="name" required />
+            <input name="name" required maxlength="80" />
           </div>
           <div class="field-row">
             <div class="field">
@@ -101,13 +101,13 @@
             </div>
             <div class="field">
               <label>Designation ·</label>
-              <input name="designation" required />
+              <input name="designation" required maxlength="60" />
             </div>
           </div>
           <div class="field-row">
             <div class="field">
               <label>Contact Number ·</label>
-              <input name="phone" required placeholder="+91 ..." />
+              <input name="phone" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" />
             </div>
             <div class="field">
               <label>State ·</label>
@@ -117,16 +117,16 @@
           <div class="field-row">
             <div class="field">
               <label>District</label>
-              <input name="district" />
+              <input name="district" maxlength="50" />
             </div>
             <div class="field">
               <label>Town</label>
-              <input name="town" />
+              <input name="town" maxlength="50" />
             </div>
           </div>
           <div class="field">
             <label>Remarks</label>
-            <textarea name="remark" placeholder="Any notes about the candidate…"></textarea>
+            <textarea name="remark" maxlength="500" placeholder="Any notes about the candidate…"></textarea>
           </div>
 
           <div class="pay-block">
@@ -141,12 +141,13 @@
 
           <div class="field">
             <label>Transaction ID ·</label>
-            <input name="txn" required placeholder="e.g. UPI8239KD019" style="font-family: var(--f-mono);" />
+            <input name="txn" required maxlength="40" placeholder="e.g. UPI8239KD019" style="font-family: var(--f-mono);" />
           </div>
 
-          <button class="btn btn-oxblood" style="width:100%; justify-content:center; margin-top:12px;" type="submit">
-            Verify &amp; issue receipt →
-          </button>
+          <div style="display:flex; gap:10px; margin-top:14px;">
+            <button class="btn btn-ghost" type="button" style="flex:1; justify-content:center;" onclick="cancelReg()">Cancel</button>
+            <button class="btn btn-oxblood" type="submit" style="flex:2; justify-content:center;">Save</button>
+          </div>
         </form>
       </div>
 
@@ -216,6 +217,11 @@
 <script>
   // form needs to be declared at top level so confirmReg() can see it
   const form = document.getElementById("regForm");
+
+  function cancelReg() {
+    // Discard the in-progress registration and return to the candidate list.
+    location.href = "employees.html";
+  }
 
   async function confirmReg() {
     const f = Object.fromEntries(new FormData(form).entries());

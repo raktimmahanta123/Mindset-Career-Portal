@@ -137,6 +137,11 @@ const API = {
       STATE.employers = STATE.employers.map(x => x.id === id ? r : x);
       return r;
     },
+    async pin(id) {
+      const r = await api(`/api/employers/${encodeURIComponent(id)}/pin`, { method: "PATCH" });
+      STATE.employers = STATE.employers.map(x => x.id === id ? r : x);
+      return r;
+    },
     async followup(id, note) {
       const r = await api(`/api/employers/${encodeURIComponent(id)}/followups`, {
         method: "POST", body: JSON.stringify({ note }),
@@ -179,6 +184,11 @@ const API = {
       const r = await api(`/api/employees/${encodeURIComponent(id)}/remark`, {
         method: "PATCH", body: JSON.stringify({ remark }),
       });
+      STATE.employees = STATE.employees.map(x => x.id === id ? r : x);
+      return r;
+    },
+    async pin(id) {
+      const r = await api(`/api/employees/${encodeURIComponent(id)}/pin`, { method: "PATCH" });
       STATE.employees = STATE.employees.map(x => x.id === id ? r : x);
       return r;
     },
@@ -592,6 +602,7 @@ function renderSidebar(active) {
         </nav>
       </div>
 
+      ${role === 'admin' ? `
       <div class="side-group">
         <h5>Reports</h5>
         <nav class="side-nav">
@@ -600,7 +611,7 @@ function renderSidebar(active) {
             Activity Log
           </a>
         </nav>
-      </div>
+      </div>` : ''}
 
       <div class="side-group">
         <h5>Account</h5>

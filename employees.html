@@ -4,7 +4,19 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Employees — Mindset Career Portal</title>
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
+<style>
+  /* When printing a receipt, hide everything except the receipt itself. */
+  @media print {
+    body * { visibility: hidden; }
+    #receipt-print, #receipt-print * { visibility: visible; }
+    #receipt-print { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
+    .modal-backdrop#receipt-modal { position: static; background: none; padding: 0; display: block; }
+    .modal-backdrop#receipt-modal .modal { box-shadow: none; max-width: 100%; }
+    .modal-head, .modal-foot { display: none !important; }
+    .flash { display: none !important; }
+  }
+</style>
 </head>
 <body>
 
@@ -26,7 +38,7 @@
       <div class="left">
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input id="q" placeholder="Search name, department, town, designation…" />
+          <input id="q" maxlength="60" placeholder="Search name, department, town, designation…" />
         </div>
         <span class="chip active" data-filter="all">All</span>
         <span class="chip" data-filter="paid">Paid</span>
@@ -50,9 +62,9 @@
             <th>State</th>
             <th>District</th>
             <th>Town</th>
-            <th style="min-width:240px">Remarks</th>
+            <th style="min-width:240px; text-align:center">Remarks</th>
             <th style="width:110px">Status</th>
-            <th style="width:140px"></th>
+            <th style="width:160px"></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -75,7 +87,7 @@
       <form id="frm" onsubmit="event.preventDefault(); saveCan();">
         <div class="field">
           <label>Candidate Name ·</label>
-          <input name="name" required />
+          <input name="name" required maxlength="80" />
         </div>
         <div class="field-row">
           <div class="field">
@@ -84,13 +96,13 @@
           </div>
           <div class="field">
             <label>Designation ·</label>
-            <input name="designation" required />
+            <input name="designation" required maxlength="60" />
           </div>
         </div>
         <div class="field-row">
           <div class="field">
             <label>Contact No. ·</label>
-            <input name="phone" required placeholder="+91 ..." />
+            <input name="phone" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" />
           </div>
           <div class="field">
             <label>State ·</label>
@@ -100,16 +112,16 @@
         <div class="field-row">
           <div class="field">
             <label>District</label>
-            <input name="district" />
+            <input name="district" maxlength="50" />
           </div>
           <div class="field">
             <label>Town</label>
-            <input name="town" />
+            <input name="town" maxlength="50" />
           </div>
         </div>
         <div class="field">
           <label>Remarks</label>
-          <textarea name="remark"></textarea>
+          <textarea name="remark" maxlength="500"></textarea>
         </div>
         <div style="padding:14px 16px; background:var(--paper-2); border:1px dashed var(--rule); font-size:12px; color:var(--ink-soft); margin-top:6px; font-family:var(--f-mono); letter-spacing:0.04em; line-height:1.6;">
           New candidates require a ₹300 registration fee + transaction ID.<br/>
@@ -174,12 +186,80 @@
       <div id="fu-history"></div>
       <div class="field">
         <label>New follow-up note ·</label>
-        <textarea id="fu-note" rows="3" placeholder="e.g., Candidate confirmed availability for interview Friday."></textarea>
+        <textarea id="fu-note" rows="3" maxlength="500" placeholder="e.g., Candidate confirmed availability for interview Friday."></textarea>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeFollowupModal()">Cancel</button>
       <button class="btn btn-oxblood" onclick="saveFollowup()">Add follow-up</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL (re-print for paid candidates) -->
+<div class="modal-backdrop" id="receipt-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <div>
+        <div class="num-tag">RECEIPT</div>
+        <h2><span class="italic">Payment</span> receipt</h2>
+      </div>
+      <button class="btn-icon" onclick="closeReceipt()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="receipt-print" class="receipt">
+        <div class="r-head">
+          <div class="r-brand">
+            <img src="assets/logo.png" alt="Mindset Career" style="height:40px;width:auto;display:block;margin-bottom:6px" />
+            <span class="sub">Mindset Career · Guwahati</span>
+          </div>
+          <div class="r-no">
+            Receipt No.
+            <strong id="rNo">—</strong>
+            <div id="rDate" style="margin-top:6px;">—</div>
+          </div>
+        </div>
+
+        <div class="r-body">
+          <div class="r-field"><div class="k">Candidate</div><div class="v" id="rName">—</div></div>
+          <div class="r-field"><div class="k">Contact</div><div class="v" id="rPhone">—</div></div>
+          <div class="r-field"><div class="k">Department</div><div class="v" id="rDept">—</div></div>
+          <div class="r-field"><div class="k">Designation</div><div class="v" id="rDesg">—</div></div>
+          <div class="r-field"><div class="k">Location</div><div class="v" id="rLoc">—</div></div>
+          <div class="r-field"><div class="k">Transaction ID</div><div class="v mono" id="rTxn" style="font-size:13px;">—</div></div>
+        </div>
+
+        <div class="r-amount">
+          <div>
+            <div class="k">Amount received</div>
+            <div style="font-size:11px; margin-top:6px; color:rgba(244,239,230,0.7)">Registration fee · Phase I</div>
+          </div>
+          <div class="v" id="rAmount">₹300</div>
+        </div>
+
+        <div class="perforate"></div>
+
+        <div class="r-foot">
+          <div>
+            <strong style="color:var(--ink)">Mindset Career</strong><br/>
+            2nd Floor, ICA Building<br/>
+            Hriday Ranjan Path, Guwahati – 781024, Assam<br/>
+            hello@mindsetcareer.in · +91 60269 41247
+          </div>
+          <div style="text-align:right; min-width:140px">
+            <em style="font-family:var(--f-display); font-style:italic; font-size:15px; color:var(--ink);">Thank you.</em><br/>
+            <span style="font-family:var(--f-mono); font-size:10px; letter-spacing:0.14em; text-transform:uppercase;">Authorised Signatory</span>
+            <div style="margin-top:22px; border-top:1px solid var(--ink); padding-top:6px; font-family:var(--f-mono); font-size:10px; color:var(--ink-soft)">for Mindset Career</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeReceipt()">Close</button>
+      <button class="btn btn-oxblood" onclick="window.print()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+        Print receipt
+      </button>
     </div>
   </div>
 </div>
@@ -203,10 +283,12 @@
       return (r.name + r.dept + r.designation + r.phone + r.state + r.district + r.town + r.remark)
         .toLowerCase().includes(query);
     });
+    // Pinned records float to the top (stable sort keeps original order within each group).
+    rows = rows.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
     document.getElementById("count-note").textContent = `Showing ${rows.length} of ${all.length}`;
 
     document.getElementById("tbody").innerHTML = rows.map((r, i) => `
-      <tr>
+      <tr data-id="${r.id}" class="${r.pinned ? 'row-pinned' : ''}">
         <td class="sn">${String(i + 1).padStart(2, "0")}</td>
         <td>
           <div class="strong">${r.name}</div>
@@ -224,8 +306,13 @@
             ${r.followUps?.[0] ? "Last follow-up: " + r.followUps[0].date : "No follow-ups yet"}
           </small>
         </td>
-        <td><span class="tag ${r.status === 'archived' ? 'archived' : (r.status === 'pending' ? 'pending' : 'paid')}">${r.status || 'paid'}</span></td>
+        <td>${
+          (r.status || 'paid') === 'paid'
+            ? `<span class="tag paid" onclick="openReceipt('${r.id}')" style="cursor:pointer" title="View / print receipt">paid</span>`
+            : `<span class="tag ${r.status === 'archived' ? 'archived' : 'pending'}">${r.status}</span>`
+        }</td>
         <td class="actions-cell">
+          ${userCan('notes')   ? `<button class="pin-btn ${r.pinned ? 'pinned' : ''}" onclick="togglePin('${r.id}')" title="${r.pinned ? 'Unpin' : 'Pin to top'}">${r.pinned ? '★' : '☆'}</button>` : (r.pinned ? '<span class="pin-static" title="Pinned">★</span>' : '')}
           ${userCan('edit')    ? `<button onclick="openEdit('${r.id}')">Edit</button>` : ''}
           ${userCan('notes')   ? `<button onclick="openFollowup('${r.id}')">Follow-up</button>` : ''}
           ${userCan('archive') ? `<button onclick="toggleArchive('${r.id}')">${r.status === 'archived' ? 'Restore' : 'Archive'}</button>` : ''}
@@ -291,6 +378,16 @@
     }
   }
 
+  async function togglePin(id) {
+    try {
+      const r = await API.employees.pin(id);
+      flash(r.pinned ? "Pinned to top" : "Unpinned");
+      render();
+    } catch (err) {
+      flash(err.message || "Could not pin record");
+    }
+  }
+
   async function toggleArchive(id) {
     try {
       const r = await API.employees.archive(id);
@@ -299,6 +396,27 @@
     } catch (err) {
       flash(err.message || "Could not change status");
     }
+  }
+
+  /* ===== Receipt re-print (click a "paid" status tag) ===== */
+  function openReceipt(id) {
+    const r = DB.get("employees").find(x => x.id === id);
+    if (!r) return;
+    document.getElementById("rNo").textContent = r.receiptNumber || r.id;
+    const pd = r.paymentDate ? new Date(r.paymentDate) : new Date(r.createdAt || Date.now());
+    document.getElementById("rDate").textContent = pd.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    document.getElementById("rName").textContent = r.name || "—";
+    document.getElementById("rPhone").textContent = r.phone || "—";
+    document.getElementById("rDept").textContent = r.dept || "—";
+    document.getElementById("rDesg").textContent = r.designation || "—";
+    document.getElementById("rLoc").textContent = [r.town, r.district, r.state].filter(Boolean).join(", ") || "—";
+    document.getElementById("rTxn").textContent = r.txn || "—";
+    document.getElementById("rAmount").textContent = formatINR(r.amountPaid || 300);
+    document.getElementById("receipt-modal").classList.add("open");
+  }
+
+  function closeReceipt() {
+    document.getElementById("receipt-modal").classList.remove("open");
   }
 
   async function delRow(id) {

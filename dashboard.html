@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Dashboard — Mindset Career Portal</title>
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
 </head>
 <body>
 
@@ -78,8 +78,8 @@
     </div>
 
     <!-- TWO BLOCKS -->
-    <div class="block-two">
-      <div class="block">
+    <div class="block-two" id="block-two">
+      <div class="block" id="activity-block">
         <div class="block-head">
           <h3>Recent <em style="font-style:italic; color:var(--oxblood)">activity</em></h3>
           <a href="activity.html">View all log →</a>
@@ -137,6 +137,7 @@
     document.getElementById("stat-rev").textContent = formatINR(revenue);
 
     const list = document.getElementById("log-list");
+    if (!list) return; // activity block hidden for non-admins
     list.innerHTML = logs.slice(0, 8).map(l => `
       <div class="log-item">
         <span class="t">${formatTime(l.t)}</span>
@@ -158,6 +159,14 @@
     if (userCan("create")) {
       document.getElementById("head-actions").innerHTML =
         '<a href="register.html" class="btn btn-oxblood">+ New Registration</a>';
+    }
+    // Recent-activity panel is admin-only. Hide it for everyone else and
+    // let the Quick-actions panel take the full width.
+    if (user.role !== "admin") {
+      const ab = document.getElementById("activity-block");
+      if (ab) ab.remove();
+      const bt = document.getElementById("block-two");
+      if (bt) bt.style.gridTemplateColumns = "1fr";
     }
     render();
   })();

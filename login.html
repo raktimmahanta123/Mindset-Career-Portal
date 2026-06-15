@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Portal Login — Mindset Career</title>
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
 </head>
 <body>
 
@@ -44,20 +44,16 @@
       <form onsubmit="event.preventDefault(); doLogin();">
         <div class="field">
           <label>Username ·</label>
-          <input id="u" required autocomplete="username" placeholder="e.g., atikur" />
+          <input id="u" required autocomplete="username" maxlength="30" placeholder="Your username" />
         </div>
         <div class="field">
           <label>Password ·</label>
-          <input id="p" type="password" required autocomplete="current-password" />
+          <input id="p" type="password" required autocomplete="current-password" maxlength="64" />
         </div>
 
         <button type="submit" class="btn btn-oxblood" style="width:100%; justify-content:center; margin-top:20px">
           Enter Portal →
         </button>
-
-        <div class="hint">
-          First-time users: default password is <code style="font-family:var(--f-mono);font-size:11px;background:rgba(0,63,161,0.08);padding:2px 6px;border-radius:3px">mindset2026</code> — change it on the Settings page after signing in.
-        </div>
       </form>
 
       <p style="margin-top:28px; font-size:13px; color:var(--ink-soft);">

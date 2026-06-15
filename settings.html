@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Settings — Mindset Career Portal</title>
-<link rel="stylesheet" href="css/styles.v2.css?p=3" />
+<link rel="stylesheet" href="css/styles.v2.css?p=4" />
 <style>
   .settings-grid {
     display: grid;
@@ -97,16 +97,16 @@
         <form id="pwd-form" onsubmit="event.preventDefault(); changePwd();">
           <div class="field">
             <label>Current password ·</label>
-            <input type="password" name="current" required autocomplete="current-password" />
+            <input type="password" name="current" required autocomplete="current-password" maxlength="64" />
           </div>
           <div class="field-row">
             <div class="field">
               <label>New password ·</label>
-              <input type="password" name="next" required autocomplete="new-password" minlength="8" />
+              <input type="password" name="next" required autocomplete="new-password" minlength="8" maxlength="64" />
             </div>
             <div class="field">
               <label>Confirm new ·</label>
-              <input type="password" name="confirm" required autocomplete="new-password" minlength="8" />
+              <input type="password" name="confirm" required autocomplete="new-password" minlength="8" maxlength="64" />
             </div>
           </div>
           <div class="form-foot">
@@ -124,7 +124,7 @@
         <form id="reset-form" onsubmit="event.preventDefault(); resetPwd();">
           <div class="field">
             <label>Username ·</label>
-            <input name="username" placeholder="e.g., po" required />
+            <input name="username" placeholder="e.g., po1" required maxlength="30" />
           </div>
           <div class="form-foot">
             <button type="submit" class="btn btn-oxblood">Generate temporary password</button>

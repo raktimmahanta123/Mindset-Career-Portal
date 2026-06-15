@@ -750,11 +750,18 @@ section { padding: 120px 0; }
   font-family: var(--f-display); font-size: 15px; font-weight: 500;
   color: var(--paper);
 }
-.side-user .meta .n { font-size: 13px; font-weight: 600; }
+.side-user .avatar { flex-shrink: 0; }
+.side-user .meta { min-width: 0; flex: 1; overflow: hidden; }
+.side-user .meta .n {
+  font-size: 13px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .side-user .meta .r {
   font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--sienna-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.side-user .btn-icon { flex-shrink: 0; }
 
 .portal-main {
   padding: 36px 48px 60px;
@@ -1020,6 +1027,20 @@ table.tbl .actions-cell button {
 }
 table.tbl .actions-cell button:hover { color: var(--oxblood); }
 table.tbl .actions-cell .del:hover { color: var(--danger); }
+
+/* Pin-to-top control + pinned-row highlight */
+table.tbl .actions-cell .pin-btn {
+  font-size: 15px;
+  color: var(--ink-soft);
+  padding: 4px 6px;
+  letter-spacing: 0;
+}
+table.tbl .actions-cell .pin-btn.pinned { color: #d99a00; }
+table.tbl .actions-cell .pin-btn:hover { color: #d99a00; }
+table.tbl .pin-static { color: #d99a00; font-size: 14px; }
+table.tbl tr.row-pinned { background: rgba(217, 154, 0, 0.07); }
+table.tbl tr.row-pinned:hover { background: rgba(217, 154, 0, 0.12); }
+table.tbl tr.row-pinned .sn { color: #b07c00; }
 
 .tag {
   display: inline-block;
